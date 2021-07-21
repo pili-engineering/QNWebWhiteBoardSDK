@@ -66,8 +66,8 @@ const Home = () => {
       block
       onClick={generateRoomToken}
     >点击随机生成 roomToken</Button>
-    <div style={{marginTop: 10}} className={css.version}>demo version: 1.0.3-beta.9</div>
-    <div className={css.version}>sdk version: 1.0.3-beta</div>
+    <div style={{ marginTop: 10 }} className={css.version}>demo version: 1.0.4-beta.1</div>
+    <div className={css.version}>sdk version: {window.QNWhiteboard.version}</div>
   </div>;
 };
 

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { storeContext } from '../store';
 import { JoinRoomStatus } from '../types/qn-whiteboard';
+import { QNWhiteboardLog } from '../utils/log';
 
 /**
  * 加入房间
@@ -14,6 +15,8 @@ const useJoinedRoom = () => {
   useEffect(() => {
     if (whiteboardClient) {
       const roomToken = new URLSearchParams(window.location.search).get('roomToken');
+      QNWhiteboardLog('roomToken', roomToken);
+      QNWhiteboardLog('useJoinedRoom whiteboardClient', whiteboardClient);
       whiteboardClient.joinRoom(roomToken, (status: JoinRoomStatus) => {
         if (JoinRoomStatus.Open) {
           setIsJoined(true);

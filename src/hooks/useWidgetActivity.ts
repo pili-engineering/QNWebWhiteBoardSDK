@@ -10,7 +10,7 @@ export interface ActiveWidget {
   pageNo: number;
   path: string;
   resourceId: string;
-  type: number;
+  type: number; // 0-文档；1-文件；2-图片；3-图形；4-未知；5-选择；6-svg；7-文字
   userId: string;
   widgetId: string;
 }
@@ -22,7 +22,9 @@ const useWidgetActivity = (whiteboardClient: any) => {
   useEffect(() => {
     function handleWidgetActivity(event: number, params: ActiveWidget) {
       QNWhiteboardLog('handleWidgetActivity params', params);
-      setActiveWidget(params);
+      if ([1, 2].includes(params.type)) {
+        setActiveWidget(params);
+      }
     }
 
     if (whiteboardClient) {

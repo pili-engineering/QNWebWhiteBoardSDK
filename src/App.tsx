@@ -21,8 +21,9 @@ const Routes = () => {
 };
 
 function App() {
+  const basename = process.env.NODE_ENV === 'development' ? '/' : `/${window.QNWhiteboard.version}`;
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Switch>
         <Routes />
       </Switch>
