@@ -18,6 +18,7 @@ import useJoinedRoom from '../../hooks/useJoinedRoom';
 import usePageChanged from '../../hooks/usePageChanged';
 import usePageListChanged from '../../hooks/usePageListChanged';
 import useWebassemblyReady from '../../hooks/useWebassemblyReady';
+import useWhiteboardSizeChanged from '../../hooks/useWhiteboardSizeChanged';
 import useWidgetActivity from '../../hooks/useWidgetActivity';
 import { storeContext } from '../../store';
 import { InputMode, JoinRoomStatus } from '../../types/qn-whiteboard';
@@ -42,6 +43,17 @@ const Room = () => {
     useBackgroundChange(whiteboardClient, curDocument);
     usePageChanged(whiteboardClient);
     const [uploadFileSpinning, setUploadFileSpinning] = useState(false);
+    const { whiteboardSize } = useWhiteboardSizeChanged(whiteboardClient);
+
+    useEffect(() => {
+      if (
+        whiteboardSize &&
+        whiteboardSize.currentHeight &&
+        whiteboardSize.currentHeight
+      ) {
+        message.info(`当前白板宽：${whiteboardSize.currentWidth}，高：${whiteboardSize.currentHeight}`);
+      }
+    }, [whiteboardSize]);
 
     /**
      * 收集初始时间和 debug 信息

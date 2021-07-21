@@ -17,8 +17,14 @@
   <!-- 单页应用可通过路由拦截控制其显隐藏 -->
   <canvas style='display: none; position: fixed' id='canvas'></canvas>
 </body>
-<script src='./qnweb-whiteboard-1.0.3-beta.umd.js'></script>
+<script src='./qnweb-whiteboard-1.0.4-beta.umd.js'></script>
 </html>
+```
+
+## 查看 SDK 版本号
+
+```ts
+console.log(QNWhiteboard.version)
 ```
 
 ## 快速开始
@@ -78,7 +84,58 @@ qnWhiteboard.registerEvent(qnWhiteboard.controller.Event.AllEvent, processEvent)
 [如果您还不知道如何生成 RoomToken，请先阅读 七牛实时音视频云接入指南](https://doc.qnsdk.com/rtn/docs/rtn_startup)
 
 ```ts
-joinRoom(roomToken: string);
+/**
+ * 加入房间状态
+ */
+enum JoinRoomStatus {
+  Open = 'open',
+  Error = 'error',
+  Close = 'close'
+}
+
+/**
+ * 加入房间 WebSocket 状态
+ */
+interface JoinRoomCallback {
+  (status: JoinRoomStatus): void
+}
+
+/**
+ * 白板的大小
+ * 默认 3
+ */
+enum BoardSize {
+  Row2Column2 = 1,
+  Row3Column3,
+  Row1Column3
+}
+
+/**
+ * 表示白板的颜色
+ */
+enum BgColor {
+  White = 1,
+  Black,
+  Green
+}
+
+/**
+ * 加入房间配置
+ * 创建的白板(meeting)的大小。有三个可选值：1,2,3 1代表白板是2x2, 2代表白板是3x3, 3代表白板是1x3 默认
+ * bgColor  [可选] 表示白板(meeting)的颜色。也有三个值可选: 1,2,3 1 代表白色，2 代表黑色，3 代表绿色。
+ * limitNumber  0代表不限制：如果 >0，代表白板内最多limitNumber个人，只要白板内人数超过limitNumber数量时，就会进不去。
+ * aspectRatio 宽高比，0.5 ～ 2.5之间，非必填
+ * zoomScale 扩展比 1～5之间 非必填
+ */
+interface JoinRoomConfig {
+  boardSizeId?: BoardSize,
+  bgColor?: BgColor,
+  limitNumber?: number,
+  aspectRatio?: number,
+  zoomScale?: number
+}
+
+joinRoom(roomToken: string, callback: JoinRoomCallback, config?: JoinRoomConfig);
 ```
 
 #### 离开房间
@@ -311,6 +368,7 @@ qnWhiteboard.unregisterEvent(qnWhiteboard.controller.Event.AllEvent,processEvent
 
 ```
 白板的尺寸发生变更
+注：你也可以监听 DocumentChange 事件，然后从 qnWhiteboard.controller.documentWidth、qnWhiteboard.controller.documentHeight 获取白板宽和高
 ```
 
 ##### JoinRoomError
@@ -323,6 +381,7 @@ qnWhiteboard.unregisterEvent(qnWhiteboard.controller.Event.AllEvent,processEvent
 
 ```
 文档发生变更
+注：获取白板宽高：qnWhiteboard.controller.documentWidth、qnWhiteboard.controller.documentHeight
 ```
 
 ##### BackgroundChange

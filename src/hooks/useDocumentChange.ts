@@ -1,4 +1,3 @@
-// import { Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import { QNWhiteboardLog } from '../utils/log';
 import { WhiteboardDocument } from './usePageListChanged';
@@ -14,6 +13,8 @@ const useDocumentChange = (whiteboardClient: any, documents: WhiteboardDocument[
      * @param params-返回时string为色值
      */
     function handleDocumentChange(event: number, params: string | { widgetId: string }) {
+      QNWhiteboardLog('handleDocumentChange', params);
+      QNWhiteboardLog('document size:', whiteboardClient.controller.documentWidth,whiteboardClient.controller.documentHeight);
       if (typeof params === 'object' && params !== null) {
         setCurWidgetId(params.widgetId);
       }
