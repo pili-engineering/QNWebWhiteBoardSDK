@@ -1,10 +1,13 @@
-const { override } = require('customize-cra');
+const { override, addWebpackPlugin } = require('customize-cra');
+const webpack = require('webpack');
+const packageJSON = require('./package.json');
 
-const rewiredMap = () => config => {
-  config.devtool = config.mode === 'development' ? 'cheap-module-source-map' : false;
-  return config;
-};
+console.log('白板 Demo 版本：', packageJSON.version);
 
 module.exports = override(
-  // rewiredMap()
+  addWebpackPlugin(
+    new webpack.DefinePlugin({
+      version: JSON.stringify(packageJSON.version)
+    })
+  )
 );

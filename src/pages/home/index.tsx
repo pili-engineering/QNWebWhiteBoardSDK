@@ -7,12 +7,11 @@ import { storeContext } from '../../store';
 import css from './index.module.scss';
 
 const roomTokens = [
-  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:PLbvLD84X9Jq5Pq_JCEgVW6nzKU=:eyJhcHBJZCI6ImZuZjB2cjZnbiIsImV4cGlyZUF0IjoxNzUzMzM2OTA3LCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoid2ViMSIsInVzZXJJZCI6IndlYnVzZXIxIn0=',
-  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:6QC0NuGyD0EWRx5A3hQuon8ly10=:eyJhcHBJZCI6ImZuZjB2cjZnbiIsImV4cGlyZUF0IjoxNzUzMzM2OTA3LCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoid2ViMiIsInVzZXJJZCI6IndlYnVzZXIyIn0=',
-  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:ZnoWpF5_ZHX3pFZN-Cq2TBjPqjQ=:eyJhcHBJZCI6ImZuZjB2cjZnbiIsImV4cGlyZUF0IjoxNzUzMzM2OTA3LCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoid2ViMyIsInVzZXJJZCI6IndlYnVzZXIzIn0=',
-  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:OBNcZ-vFDXwQllv5g_EyMZqzXxQ=:eyJhcHBJZCI6ImZuZjB2cjZnbiIsImV4cGlyZUF0IjoxNzUzMzM2OTA3LCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoid2ViNCIsInVzZXJJZCI6IndlYnVzZXI0In0=',
-  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:DEfuUp8K3-kuZa7qN0qCnNcX7Dc=:eyJhcHBJZCI6ImZuZjB2cjZnbiIsImV4cGlyZUF0IjoxNzUzMzM2OTA3LCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoid2ViNSIsInVzZXJJZCI6IndlYnVzZXI1In0=',
-  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:H14IyZXv28iUPjB3rdGQ4hXWMfI=:eyJhcHBJZCI6ImZuZjB2cjZnbiIsImV4cGlyZUF0IjoxNzUzMzM2OTA3LCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoid2ViNiIsInVzZXJJZCI6IndlYnVzZXI2In0='
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:izA6cPmls835DDCSCJbVCRArGMw=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ28xIiwidXNlcklkIjoiZ291c2VyMSJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:nDJqDjwJTRf2DVORszD4YrHP93M=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ28yIiwidXNlcklkIjoiZ291c2VyMiJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:PfNrk5kl8uq56R45RCz5Ak9H1jE=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ28zIiwidXNlcklkIjoiZ291c2VyMyJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:YGy-O2eDx5gNGQJm4eBDWZdfWdQ=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ280IiwidXNlcklkIjoiZ291c2VyNCJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:irEEx8TT7A_zG5MmnGI33chWFKk=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ281IiwidXNlcklkIjoiZ291c2VyNSJ9'
 ];
 
 const Home = () => {
@@ -66,7 +65,7 @@ const Home = () => {
       block
       onClick={generateRoomToken}
     >点击随机生成 roomToken</Button>
-    <div style={{ marginTop: 10 }} className={css.version}>demo version: 1.0.4-beta.1</div>
+    <div style={{ marginTop: 10 }} className={css.version}>demo version: {version}</div>
     <div className={css.version}>sdk version: {window.QNWhiteboard.version}</div>
   </div>;
 };

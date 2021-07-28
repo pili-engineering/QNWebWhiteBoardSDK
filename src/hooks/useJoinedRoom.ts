@@ -14,6 +14,10 @@ const useJoinedRoom = () => {
 
   useEffect(() => {
     if (whiteboardClient) {
+      if (whiteboardClient.controller.isWebglContextLost) { // webgl 上下文丢失后刷新页面
+        window.location.reload();
+        return;
+      }
       const roomToken = new URLSearchParams(window.location.search).get('roomToken');
       QNWhiteboardLog('roomToken', roomToken);
       QNWhiteboardLog('useJoinedRoom whiteboardClient', whiteboardClient);
@@ -31,6 +35,7 @@ const useJoinedRoom = () => {
     return () => {
       if (whiteboardClient) {
         whiteboardClient.leaveRoom();
+        whiteboardClient.destroyWebglContext();
       }
     };
   }, [whiteboardClient]);

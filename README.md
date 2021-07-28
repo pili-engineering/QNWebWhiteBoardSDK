@@ -14,10 +14,9 @@
 </head>
 <body>
   <!--  绑定白板的 canvas -->
-  <!-- 单页应用可通过路由拦截控制其显隐藏 -->
-  <canvas style='display: none; position: fixed' id='canvas'></canvas>
+  <canvas id='canvas'></canvas>
 </body>
-<script src='./qnweb-whiteboard-1.0.4-beta.umd.js'></script>
+<script src='./qnweb-whiteboard-1.0.6-beta.umd.js'></script>
 </html>
 ```
 
@@ -45,8 +44,6 @@ function processEvent(event,params) {
     case qnWhiteboard.controller.Event.AllEvent:
       break;
     case qnWhiteboard.controller.Event.PageListChanged:
-      break;
-    case qnWhiteboard.controller.Event.PageChanged:
       break;
     case qnWhiteboard.controller.Event.WebassemblyReady:
       break;
@@ -324,6 +321,14 @@ interface SetCanvasStyle {
 setCanvas(style: SetCanvasStyle)
 ```
 
+#### 销毁 webgl 上下文
+
+```tsx
+// 可以通过访问 QNWhiteboard.controller.isWebglContextLost 来访问 webgl 上下文是否被销毁
+// controller.isWebglContextLost 为 true，则为被销毁；false 为未被销毁
+destroyWebglContext();
+```
+
 #### 事件回调接口介绍
 
 示例：
@@ -337,8 +342,6 @@ qnWhiteboard.registerEvent(qnWhiteboard.controller.Event.AllEvent, processEvent)
 function processEvent(event,params) {
   switch(event) {   
     case qnWhiteboard.controller.Event.PageListChanged:      
-      break;    
-    case qnWhiteboard.controller.Event.PageChanged:      
       break;    
     case qnWhiteboard.controller.Event.WebassemblyReady:      
       break;		
@@ -358,13 +361,7 @@ qnWhiteboard.unregisterEvent(qnWhiteboard.controller.Event.AllEvent,processEvent
 页面列表变更，例如有人新建或者删除页面
 ```
 
-##### PageChanged
-
-```
-当前显示页面发生变更，例如翻页会触发此动作
-```
-
-#####  WhiteboardSizeChanged
+##### WhiteboardSizeChanged
 
 ```
 白板的尺寸发生变更
@@ -414,3 +411,8 @@ qnWhiteboard.unregisterEvent(qnWhiteboard.controller.Event.AllEvent,processEvent
 有文件发生变化，例如插入、删除等
 ```
 
+#### WidgetScroll
+
+```
+文件滚动事件发生，ScrollToTop 为 1 表示滚动顶部，ScrollToBottom 为 1 标识滚动到了底部
+```

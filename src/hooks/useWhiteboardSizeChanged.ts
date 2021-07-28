@@ -1,20 +1,26 @@
+import { message } from 'antd';
 import { useEffect, useState } from 'react';
 import { QNWhiteboardLog } from '../utils/log';
 
-type WhiteboardSize = {
+export type WhiteboardSize = {
   maxHeight?: number;
   maxWidth?: number;
   currentHeight?: number;
   currentWidth?: number;
 }
 
-const useWhiteboardSizeChanged = (whiteboardClient: any) => {
+const useWhiteboardSizeChanged = (whiteboardClient: any, showToast?: boolean) => {
   const [whiteboardSize, setWhiteboardSize] = useState<WhiteboardSize>();
 
+  /**
+   * 监听白板尺寸
+   */
   useEffect(() => {
     function handleWhiteboardSize(event: number, params: WhiteboardSize) {
-      QNWhiteboardLog('handleWhiteboardSize params', params);
-      setWhiteboardSize(params);
+      if (!whiteboardSize) {
+        QNWhiteboardLog('handleWhiteboardSize params', params);
+        setWhiteboardSize(params);
+      }
     }
 
     if (whiteboardClient) {
@@ -25,7 +31,16 @@ const useWhiteboardSizeChanged = (whiteboardClient: any) => {
         whiteboardClient.unregisterEvent(whiteboardClient.controller.Event.WhiteboardSizeChanged, handleWhiteboardSize);
       }
     };
-  }, [whiteboardClient]);
+  }, [whiteboardClient, whiteboardSize]);
+
+  /**
+   * 提示
+   */
+  useEffect(() => {
+    if (whiteboardSize && showToast) {
+      message.info(`当前白板宽：${whiteboardSize.currentWidth}，高：${whiteboardSize.currentHeight}`);
+    }
+  }, [whiteboardSize, showToast]);
 
   return {
     whiteboardSize
