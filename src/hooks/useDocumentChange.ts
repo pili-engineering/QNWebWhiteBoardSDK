@@ -12,7 +12,7 @@ const useDocumentChange = (whiteboardClient: any, documents: WhiteboardDocument[
      * @param event
      * @param params-返回时string为色值
      */
-    function handleDocumentChange(event: number, params: string | { widgetId: string }) {
+    function handleDocumentChange(event: number, params: { widgetId: string }) {
       QNWhiteboardLog('handleDocumentChange', params);
       QNWhiteboardLog('document size:', whiteboardClient.controller.documentWidth,whiteboardClient.controller.documentHeight);
       if (typeof params === 'object' && params !== null) {
