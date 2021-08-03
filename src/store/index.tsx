@@ -14,13 +14,14 @@ interface State {
   geometryMode: GeometryMode; // 图形模式
   inputMode: InputMode, // 白板输入模式
   isDebug: boolean, // 是否开启 debug 调试
+  RTCClient: any;
 }
 
 interface Action {
   type: 'updatePenColor' | 'updatePenSize' |
     'updatePenType' | 'updateWhiteboardClient' |
     'updateRubberSize' | 'updateGeometryMode' |
-    'updateInputMode' | 'updateIsDebug';
+    'updateInputMode' | 'updateIsDebug' | 'updateRTCClient';
   payload: any;
 }
 
@@ -37,7 +38,8 @@ const defaultState = {
   rubberSize: 30,
   geometryMode: GeometryMode.Line,
   inputMode: InputMode.Pencil,
-  isDebug: false
+  isDebug: false,
+  RTCClient: null
 };
 
 export const storeContext = React.createContext({} as StoreContext);
@@ -84,6 +86,11 @@ export function reducer(state: State, action: Action) {
       return {
         ...state,
         isDebug: payload
+      };
+    case 'updateRTCClient':
+      return {
+        ...state,
+        RTCClient: payload
       };
   }
   return state;

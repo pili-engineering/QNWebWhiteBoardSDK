@@ -7,26 +7,36 @@ import { QNWhiteboardLog } from '../utils/log';
  * 加入房间
  */
 const useJoinedRoom = () => {
-  const { state } = useContext(storeContext);
+  const { state, dispatch } = useContext(storeContext);
   const [whiteboardClient, setWhiteboardClient] = useState<any>(state.whiteboardClient);
   const [isJoined, setIsJoined] = useState<boolean>(false);
   const [roomError, setRoomError] = useState<JoinRoomStatus>();
+  const [roomToken, setRoomToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!state.RTCClient) {
+      const client = window.QNRTC.default.createClient();
+      dispatch({
+        type: 'updateRTCClient',
+        payload: client
+      });
+    }
+  }, [state.RTCClient, dispatch]);
 
   useEffect(() => {
     if (whiteboardClient) {
-      if (whiteboardClient.controller.isWebglContextLost) { // webgl 上下文丢失后刷新页面
-        window.location.reload();
-        return;
-      }
       const roomToken = new URLSearchParams(window.location.search).get('roomToken');
       QNWhiteboardLog('roomToken', roomToken);
       QNWhiteboardLog('useJoinedRoom whiteboardClient', whiteboardClient);
-      whiteboardClient.joinRoom(roomToken, (status: JoinRoomStatus) => {
-        if (JoinRoomStatus.Open) {
-          setIsJoined(true);
-        } else {
-          setRoomError(status);
-        }
+      setRoomToken(roomToken);
+      state.RTCClient.join(roomToken).then(() => {
+        whiteboardClient.joinRoom(roomToken, (status: JoinRoomStatus) => {
+          if (JoinRoomStatus.Open) {
+            setIsJoined(true);
+          } else {
+            setRoomError(status);
+          }
+        });
       });
     } else {
       const qnWhiteboard = new window.QNWhiteboard();
@@ -35,15 +45,18 @@ const useJoinedRoom = () => {
     return () => {
       if (whiteboardClient) {
         whiteboardClient.leaveRoom();
-        whiteboardClient.destroyWebglContext();
+      }
+      if (state.RTCClient) {
+        state.RTCClient.leave();
       }
     };
-  }, [whiteboardClient]);
+  }, [whiteboardClient, state.RTCClient]);
 
   return {
     whiteboardClient,
     isJoined,
-    roomError
+    roomError,
+    roomToken
   };
 };
 

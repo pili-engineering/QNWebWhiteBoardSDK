@@ -26,7 +26,7 @@ import css from './index.module.scss';
 
 const Room = () => {
     const [drawerVisible, setDrawerVisible] = useState(false);
-    const { whiteboardClient, isJoined, roomError } = useJoinedRoom();
+    const { whiteboardClient, isJoined, roomError, roomToken } = useJoinedRoom();
     const { webassemblyReady } = useWebassemblyReady(whiteboardClient);
     const { documents } = usePageListChanged(whiteboardClient);
     const { curDocument } = useDocumentChange(whiteboardClient, documents);
@@ -46,6 +46,7 @@ const Room = () => {
       roomError,
       curDocument
     });
+    const [whiteboardVisible, setWhiteboardVisible] = useState(true);
 
     /**
      * 初始化完成
@@ -56,7 +57,6 @@ const Room = () => {
           type: 'updateWhiteboardClient',
           payload: whiteboardClient
         });
-        whiteboardClient.setCanvasStyle();
         QNWhiteboardLog('loading ok');
         setRoomLoading(false);
       }
@@ -263,7 +263,7 @@ const Room = () => {
 
     return <div className={css.room}>
 
-      <canvas id='canvas' style={{ position: 'fixed' }}></canvas>
+      <div id='canvasBox' className={css.whiteboardCanvas}></div>
 
       <div className={classNames(css.menu, { [css.menuExpanded]: isExpanded })}>
         <div className={css.menuBar}>
@@ -392,6 +392,24 @@ const Room = () => {
         }}
         onClick={clearPage}
       >点击清屏</Button>
+
+      <Button
+        type='primary'
+        style={{
+          position: 'fixed',
+          right: '25px',
+          bottom: '120px',
+          zIndex: 2
+        }}
+        onClick={() => {
+          if (whiteboardVisible) {
+            whiteboardClient.leaveRoom();
+          } else {
+            whiteboardClient.joinRoom(roomToken);
+          }
+          setWhiteboardVisible(!whiteboardVisible);
+        }}
+      >{whiteboardVisible ? '退出' : '进入'}房间</Button>
 
       <input
         style={{ display: 'none' }}

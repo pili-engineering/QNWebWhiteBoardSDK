@@ -16,7 +16,7 @@
   <!--  绑定白板的 canvas -->
   <canvas id='canvas'></canvas>
 </body>
-<script src='./qnweb-whiteboard-1.0.6-beta.umd.js'></script>
+<script src='./qnweb-whiteboard.umd.js'></script>
 </html>
 ```
 
