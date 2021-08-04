@@ -13,8 +13,8 @@
   <title>Title</title>
 </head>
 <body>
-  <!--  绑定白板的 canvas -->
-  <canvas id='canvas'></canvas>
+  <!--  白板容器 -->
+  <div id='canvasBox'></div>
 </body>
 <script src='./qnweb-whiteboard.umd.js'></script>
 </html>
