@@ -47,6 +47,7 @@ const Room = () => {
       curDocument
     });
     const [whiteboardVisible, setWhiteboardVisible] = useState(true);
+    const [wIsOpen, setWIsOpen] = useState<'open' | 'close'>();
 
     /**
      * 初始化完成
@@ -261,9 +262,36 @@ const Room = () => {
       });
     }, [whiteboardClient, curDocument]);
 
+    /**
+     * 重新创建白板
+     */
+    const onReCreateWhiteboard = () => {
+      if (wIsOpen) {
+        setWIsOpen(wIsOpen === 'open' ? 'close' : 'open');
+      } else {
+        setWIsOpen('close');
+      }
+    };
+
+    /**
+     * 重新创建白板
+     */
+    useEffect(() => {
+      if (wIsOpen === 'open') {
+        console.log('open', document.getElementById('canvasBox'));
+        whiteboardClient.joinRoom(roomToken);
+      }
+      if (wIsOpen === 'close') {
+        console.log('close', document.getElementById('canvasBox'));
+        whiteboardClient.leaveRoom();
+      }
+    }, [whiteboardClient, wIsOpen, roomToken]);
+
     return <div className={css.room}>
 
-      <div id='canvasBox' className={css.whiteboardCanvas}></div>
+      {
+        wIsOpen === 'close' ? null : <div className={css.canvasBox} id='canvasBox'></div>
+      }
 
       <div className={classNames(css.menu, { [css.menuExpanded]: isExpanded })}>
         <div className={css.menuBar}>
@@ -381,6 +409,17 @@ const Room = () => {
           <Spin tip='文件上传中...' spinning={uploadFileSpinning} />
         </div>
       }
+
+      <Button
+        type='primary'
+        style={{
+          position: 'fixed',
+          right: '25px',
+          bottom: '170px',
+          zIndex: 2
+        }}
+        onClick={onReCreateWhiteboard}
+      >重新创建白板</Button>
 
       <Button
         type='primary'
