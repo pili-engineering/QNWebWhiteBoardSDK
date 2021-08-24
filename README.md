@@ -123,6 +123,7 @@ enum BgColor {
  * limitNumber  0代表不限制：如果 >0，代表白板内最多limitNumber个人，只要白板内人数超过limitNumber数量时，就会进不去。
  * aspectRatio 宽高比，0.5 ～ 2.5之间，非必填
  * zoomScale 扩展比 1～5之间 非必填
+ * title 白板标题(长度 1 ~ 20 支持数字、字符、下划线_)，相同的RTC房间，如果title相同，则进相同的房间，一个RTC房间可以有多个白板房间，标题不同就会生成新的，非必填
  */
 interface JoinRoomConfig {
   boardSizeId?: BoardSize,
@@ -130,6 +131,7 @@ interface JoinRoomConfig {
   limitNumber?: number,
   aspectRatio?: number,
   zoomScale?: number
+  title?: string;
 }
 
 joinRoom(roomToken: string, callback: JoinRoomCallback, config?: JoinRoomConfig);
@@ -318,7 +320,7 @@ interface SetCanvasStyle {
   left?: number;
   top?: number;
 }
-setCanvas(style: SetCanvasStyle)
+setCanvasStyle(style: SetCanvasStyle)
 ```
 
 #### 销毁 webgl 上下文

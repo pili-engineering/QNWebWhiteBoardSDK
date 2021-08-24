@@ -1,6 +1,6 @@
 {
   "name": "qnweb-whiteboard-demo",
-  "version": "1.0.9-beta",
+  "version": "1.0.10-beta",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -26,9 +26,7 @@
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
-    "eject": "react-scripts eject",
-    "test-sh": "sh preRelease.sh",
-    "production-sh": "sh release.sh"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

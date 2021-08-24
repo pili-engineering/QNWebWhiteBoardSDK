@@ -17,6 +17,7 @@ const roomTokens = [
 const Home = () => {
   const history = useHistory();
   const [roomToken, setRoomToken] = useState<string>();
+  const [roomTitle, setRoomTitle] = useState<string>();
   const { dispatch, state } = useContext(storeContext);
 
   /**
@@ -41,10 +42,11 @@ const Home = () => {
   /**
    * 点击进入房间
    */
-  const joinRoom = useCallback(() => {
-    const pushURL = `/room?roomToken=${roomToken}&isDebug=${state.isDebug}`;
+  const joinRoom = () => {
+    let pushURL = `/room?roomToken=${roomToken}&isDebug=${state.isDebug}`;
+    if (roomTitle) pushURL += `&roomTitle=${roomTitle}`
     history.push(pushURL);
-  }, [history, roomToken, state.isDebug]);
+  }
 
   return <div className={css.container}>
     <h1 onClick={openDebug} className={css.title}>七牛白板 demo 体验</h1>
@@ -52,6 +54,12 @@ const Home = () => {
       value={roomToken}
       onChange={e => setRoomToken(e.target.value)}
       placeholder='请输入roomToken'
+      style={{ marginBottom: 10 }}
+    />
+    <Input
+      value={roomTitle}
+      onChange={e => setRoomTitle(e.target.value)}
+      placeholder='请输入房间名'
       style={{ marginBottom: 10 }}
     />
     <Button

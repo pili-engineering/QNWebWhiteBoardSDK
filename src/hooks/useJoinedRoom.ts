@@ -24,18 +24,22 @@ const useJoinedRoom = () => {
   }, [state.RTCClient, dispatch]);
 
   useEffect(() => {
+    function joinRoomCallback(status: JoinRoomStatus) {
+      if (JoinRoomStatus.Open) {
+        setIsJoined(true);
+      } else {
+        setRoomError(status);
+      }
+    }
     if (whiteboardClient) {
       const roomToken = new URLSearchParams(window.location.search).get('roomToken');
+      const roomTitle = new URLSearchParams(window.location.search).get('roomTitle');
       QNWhiteboardLog('roomToken', roomToken);
       QNWhiteboardLog('useJoinedRoom whiteboardClient', whiteboardClient);
       setRoomToken(roomToken);
       state.RTCClient.join(roomToken).then(() => {
-        whiteboardClient.joinRoom(roomToken, (status: JoinRoomStatus) => {
-          if (JoinRoomStatus.Open) {
-            setIsJoined(true);
-          } else {
-            setRoomError(status);
-          }
+        whiteboardClient.joinRoom(roomToken, joinRoomCallback, {
+          title: roomTitle || ''
         });
       });
     } else {
