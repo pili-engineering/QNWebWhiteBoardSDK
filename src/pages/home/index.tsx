@@ -75,7 +75,6 @@ const Home = () => {
     >点击随机生成 roomToken</Button>
     <div style={{ marginTop: 10 }} className={css.version}>demo version: {version}</div>
     <div className={css.version}>sdk version: {window.QNWhiteboard.version}</div>
-    <div className={css.version}>RTC version: {window.QNRTC.version}</div>
   </div>;
 };
 
