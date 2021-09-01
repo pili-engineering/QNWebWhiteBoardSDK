@@ -1,6 +1,6 @@
 {
   "name": "qnweb-whiteboard-demo",
-  "version": "1.0.10-beta",
+  "version": "1.0.11",
   "private": true,
   "homepage": ".",
   "dependencies": {

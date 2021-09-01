@@ -7,21 +7,11 @@ import { QNWhiteboardLog } from '../utils/log';
  * 加入房间
  */
 const useJoinedRoom = () => {
-  const { state, dispatch } = useContext(storeContext);
+  const { state } = useContext(storeContext);
   const [whiteboardClient, setWhiteboardClient] = useState<any>(state.whiteboardClient);
   const [isJoined, setIsJoined] = useState<boolean>(false);
   const [roomError, setRoomError] = useState<JoinRoomStatus>();
   const [roomToken, setRoomToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!state.RTCClient) {
-      const client = window.QNRTC.default.createClient();
-      dispatch({
-        type: 'updateRTCClient',
-        payload: client
-      });
-    }
-  }, [state.RTCClient, dispatch]);
 
   useEffect(() => {
     function joinRoomCallback(status: JoinRoomStatus) {
@@ -37,10 +27,8 @@ const useJoinedRoom = () => {
       QNWhiteboardLog('roomToken', roomToken);
       QNWhiteboardLog('useJoinedRoom whiteboardClient', whiteboardClient);
       setRoomToken(roomToken);
-      state.RTCClient.join(roomToken).then(() => {
-        whiteboardClient.joinRoom(roomToken, joinRoomCallback, {
-          title: roomTitle || ''
-        });
+      whiteboardClient.joinRoom(roomToken, joinRoomCallback, {
+        title: roomTitle || ''
       });
     } else {
       const qnWhiteboard = new window.QNWhiteboard();
@@ -50,17 +38,14 @@ const useJoinedRoom = () => {
       if (whiteboardClient) {
         whiteboardClient.leaveRoom();
       }
-      if (state.RTCClient) {
-        state.RTCClient.leave();
-      }
     };
-  }, [whiteboardClient, state.RTCClient]);
+  }, [whiteboardClient]);
 
   return {
     whiteboardClient,
     isJoined,
     roomError,
-    roomToken
+    roomToken,
   };
 };
 

@@ -277,9 +277,12 @@ const Room = () => {
      * 重新创建白板
      */
     useEffect(() => {
+      const roomTitle = new URLSearchParams(window.location.search).get('roomTitle');
       if (wIsOpen === 'open') {
         console.log('open', document.getElementById('canvasBox'));
-        whiteboardClient.joinRoom(roomToken);
+        whiteboardClient.joinRoom(roomToken, null, {
+          title: roomTitle || ''
+        });
       }
       if (wIsOpen === 'close') {
         console.log('close', document.getElementById('canvasBox'));
@@ -441,10 +444,13 @@ const Room = () => {
           zIndex: 2
         }}
         onClick={() => {
+          const roomTitle = new URLSearchParams(window.location.search).get('roomTitle');
           if (whiteboardVisible) {
             whiteboardClient.leaveRoom();
           } else {
-            whiteboardClient.joinRoom(roomToken);
+            whiteboardClient.joinRoom(roomToken, null, {
+              title: roomTitle || ''
+            });
           }
           setWhiteboardVisible(!whiteboardVisible);
         }}
