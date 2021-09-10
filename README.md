@@ -1,420 +1,1029 @@
-## 开发准备
+# 七牛 IM SDK
 
-引入 sdk：
+## 前期准备
 
-```html
-<!--html 文件-->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Title</title>
-</head>
-<body>
-  <!--  白板容器 -->
-  <div id='canvasBox'></div>
-</body>
-<script src='./qnweb-whiteboard.umd.js'></script>
-</html>
-```
+下载对应 SDK 文件，Web 版地址为：qnweb-im.js，并在代码中引用。
 
-## 查看 SDK 版本号
+## 初始化
+
+首先设置 AppID
 
 ```ts
-console.log(QNWhiteboard.version)
+const config = {
+  appid: "YOUR_APP_ID",
+  ws: false,
+  autoLogin: true
+};
 ```
 
-## 快速开始
-
-```js
-// js 文件
-
-// 此时 QNWhiteboard 就已经被导入了
-
-const qnWhiteboard = new QNWhiteboard(); // 初始化白板
-
-// 获取 roomToken 加入房间 
-qnWhiteboard.joinRoom(roomToken);
-
-//处理白板和房间事件
-function processEvent(event,params) {
-  switch(event) {
-    case qnWhiteboard.controller.Event.AllEvent:
-      break;
-    case qnWhiteboard.controller.Event.PageListChanged:
-      break;
-    case qnWhiteboard.controller.Event.WebassemblyReady:
-      break;
-    case qnWhiteboard.controller.Event.WhiteboardSizeChanged:
-      break;
-    case qnWhiteboard.controller.Event.JoinRoomError:
-      break;
-    case qnWhiteboard.controller.Event.DocumentChange:
-      break;
-    case qnWhiteboard.controller.Event.BackgroundChange:
-      break;
-    case qnWhiteboard.controller.Event.WidgetActivity:
-      break;
-    case qnWhiteboard.controller.Event.FileFlip:
-      break;
-    case qnWhiteboard.controller.Event.RecoveryState:
-      break;
-    case qnWhiteboard.controller.Event.WidgetAction:
-      break;
-  }
-}
-
-//注册白板的事件回调函数
-qnWhiteboard.registerEvent(qnWhiteboard.controller.Event.AllEvent, processEvent);
-```
-
-## API 文档
-
-### QNWhiteboard 实例方法
-
-#### 加入房间
-
-首先访问自己的服务器获取要加入的白板房间的token参数（房间的创建和token的生成由服务器对接SDK服务端接口）。
-
-[如果您还不知道如何生成 RoomToken，请先阅读 七牛实时音视频云接入指南](https://doc.qnsdk.com/rtn/docs/rtn_startup)
+然后创建im对象，供全局调用。
 
 ```ts
-/**
- * 加入房间状态
- */
-enum JoinRoomStatus {
-  Open = 'open',
-  Error = 'error',
-  Close = 'close'
-}
-
-/**
- * 加入房间 WebSocket 状态
- */
-interface JoinRoomCallback {
-  (status: JoinRoomStatus): void
-}
-
-/**
- * 白板的大小
- * 默认 3
- */
-enum BoardSize {
-  Row2Column2 = 1,
-  Row3Column3,
-  Row1Column3
-}
-
-/**
- * 表示白板的颜色
- */
-enum BgColor {
-  White = 1,
-  Black,
-  Green
-}
-
-/**
- * 加入房间配置
- * 创建的白板(meeting)的大小。有三个可选值：1,2,3 1代表白板是2x2, 2代表白板是3x3, 3代表白板是1x3 默认
- * bgColor  [可选] 表示白板(meeting)的颜色。也有三个值可选: 1,2,3 1 代表白色，2 代表黑色，3 代表绿色。
- * limitNumber  0代表不限制：如果 >0，代表白板内最多limitNumber个人，只要白板内人数超过limitNumber数量时，就会进不去。
- * aspectRatio 宽高比，0.5 ～ 2.5之间，非必填
- * zoomScale 扩展比 1～5之间 非必填
- * title 白板标题(长度 1 ~ 20 支持数字、字符、下划线_)，相同的RTC房间，如果title相同，则进相同的房间，一个RTC房间可以有多个白板房间，标题不同就会生成新的，非必填
- */
-interface JoinRoomConfig {
-  boardSizeId?: BoardSize,
-  bgColor?: BgColor,
-  limitNumber?: number,
-  aspectRatio?: number,
-  zoomScale?: number
-  title?: string;
-}
-
-joinRoom(roomToken: string, callback: JoinRoomCallback, config?: JoinRoomConfig);
+const im = QNIM.init(config);
 ```
 
-#### 离开房间
+## API
 
-```js
-leaveRoom()
+### base 基础部分
+
+#### 登录
+
+```ts
+im.login({
+  mobile: String, // 与name 2选1
+  name: String,
+  password: String,
+})
 ```
 
-#### widget 缩放
+#### 监听
 
-```js
-// 1-放大，2-缩小
-enum WidgetConfigScale {
-  Zoom = 1, // 放大
-  ZoomOut = -1 // 缩小
-}
-scaleWidget(config: WidgetConfig)
-```
-
-#### 删除 widget
-
-```js
-deleteWidget(widgetId: string)
-```
-
-#### 还原笔迹
-
-```js
-rubberUndo()
-```
-
-#### 清空 undo 回收站
-
-```js
-clearRecovery()
-```
-
-#### 设置白板输入模式属性
-
-```js
-// 画笔类型 type，0-写字笔，	1-荧光笔，2、3、4、5为指针状态
-// 画笔颜色 color: string; #FF+颜色;彩笔: #7F+颜色  
-// 画笔尺寸 size: number; 
-enum PenType {
-  WritingPen,
-  HighlighterPen,
-  Pointer1,
-  Pointer2,
-  Pointer3,
-  Pointer4,
-}
-interface PenStyle {
-  type?: PenType,
-  color?: string,
-  size?: number
-}
-setPenStyle(penStyle: PenStyle);
-```
-
-#### 设置白板输入模式
-
-```js
-enum InputMode {
-  Select = 'select', // 选择模式
-  Pencil = 'pencil', // 普通画笔模式
-  Laser = 'laser', // 激光模式
-  Rubber = 'rubber', // 橡皮模式
-  Geometry = 'geometry', // 图形模式
-  Mark = 'mark' // mark 笔模式
-}
-setInputMode(mode: InputMode)
-```
-
-#### 设置橡皮参数
-
-```js
-setEraseSize(size: number)
-```
-
-#### 设置图形模式
-
-```js
-// 0-矩形，1-圆，3-线，6-箭头
-enum GeometryMode {
-  Rectangle = 0, 
-  Circle = 1,
-  Line = 3,
-  Arrow = 6
-}
-setGeometryMode(mode: Mode)
-```
-
-#### 设置白板的背景色
-
-```js
-// #FF+颜色
-// 透明白板值：#00000000
-setWhiteboardBack(color: string)
-```
-
-#### 新建文档
-
-```js
-newDocument()
-```
-
-#### 切换文档
-
-```js
-cutDocument(widgetId: string)
-```
-
-#### 插入文档
-
-```js
-/**
- * 注意：这里的 api 是向传入 widgetId 前面插入的
- */
-insertDocument(widgetId: string)
-```
-
-#### 删除文档
-
-```js
-deleteDocument(widgetId: string)
-```
-
-#### 文件上传
-
-```tsx
-interface RoleID {
-  roleName: string;
-  roleId: number;
-  level: number;
-}
-interface Superior {
-  appId: string;
-  meetingId: string;
-  userId: string;
-  token: string;
-  chatRoomId: number;
-  fileGroupId: string;
-  sessionId: string;
-  nickName: string;
-  avatar: string;
-  roleId: RoleID[];
-}
-// file 为上传的文件，可写入一个 <input type="file" id="upload-file" /> 元素。
-// 然后获取到这个元素的选中的文件：通过监听这个元素的 change 事件，获取 event.target.files[0] 的值即为要上传的文件
-// superior 直接使用 Object.assign(qnWhiteboard.controller.room, qnWhiteboard.controller.me) 得到的值
-// left-上传后文件展示的位置
-// top-上传后文件展示的位置
-// width, height-上传后文件展示的宽和高
-interface UploadFileConfig {
-  file?: File;
-  superior?: Superior,
-  left?: number;
-  top?: number;
-  width?: number;
-  height?: number;
-  callback?: (error?: any) => void;
-}
-uploadFile(config: UploadFileConfig)
-```
-
-#### 清屏
-
-```tsx
-interface ClearPageConfig {
-  widgetId: string
-}
-clearPage(config: ClearPageConfig)
-```
-
-#### 设置 canvas 
-
-```tsx
-// 不传参默认为全屏
-// 注：需要在白板完全初始化之后才可以设置(DocumentChange 事件之后执行)
-interface SetCanvasStyle {
-  width?: number;
-  height?: number;
-  left?: number;
-  top?: number;
-}
-setCanvasStyle(style: SetCanvasStyle)
-```
-
-#### 销毁 webgl 上下文
-
-```tsx
-// 可以通过访问 QNWhiteboard.controller.isWebglContextLost 来访问 webgl 上下文是否被销毁
-// controller.isWebglContextLost 为 true，则为被销毁；false 为未被销毁
-destroyWebglContext();
-```
-
-#### 事件回调接口介绍
-
-示例：
-
-```js
-// 事件注册
-// 第一个参数是要注册的事件类型，
-// allEvent表示要监听所有事件，
-// 如果要监听单一事件，请按照下面的参数说明来注册，第二个参数是要绑定的事件处理函数
-qnWhiteboard.registerEvent(qnWhiteboard.controller.Event.AllEvent, processEvent);
-function processEvent(event,params) {
-  switch(event) {   
-    case qnWhiteboard.controller.Event.PageListChanged:      
-      break;    
-    case qnWhiteboard.controller.Event.WebassemblyReady:      
-      break;		
-    // ....
-  }
-}
-// 事件注销
-// 第一个参数是事件名称,AllEvent代表所有，其他单一事件参考下面的参数说明;第二个参数是具体的绑定函数
-qnWhiteboard.unregisterEvent(qnWhiteboard.controller.Event.AllEvent,processEvent);
-```
-
-#### 事件参数说明:
-
-##### PageListChanged
+```ts
+im.on('events', (ret) => {
+  //do something with ret
+})
+// or
+im.on({
+  eventName: (ret) => {
+    //do something with ret
+  },
+  ...
+})
 
 ```
-页面列表变更，例如有人新建或者删除页面
+
+#### 取消监听
+
+```ts
+im.off('events', (ret) => {
+  //do something with ret
+})
+// or
+im.off({
+  eventName: (ret) => {
+    //do something with ret
+  },
+  ...
+})
 ```
 
-##### WhiteboardSizeChanged
+#### 二维码登录
 
-```
-白板的尺寸发生变更
-注：你也可以监听 DocumentChange 事件，然后从 qnWhiteboard.controller.documentWidth、qnWhiteboard.controller.documentHeight 获取白板宽和高
-```
-
-##### JoinRoomError
-
-```
-加入房间失败
+```ts
+im.qrlogin({
+  password,
+  user_id
+});
 ```
 
-##### DocumentChange
+#### token登录
 
-```
-文档发生变更
-注：获取白板宽高：qnWhiteboard.controller.documentWidth、qnWhiteboard.controller.documentHeight
-```
-
-##### BackgroundChange
-
-```
-背景色发生变更
+```ts
+im.tokenLogin(user_id, token)
 ```
 
-##### WidgetActivity
+### rosterManager
 
-```
-当前的活动 widget 发生变更
-```
+#### 获取好友id列表
 
-##### FileFlip
-
-```
-当前 widget 被翻页
+```ts
+im.rosterManage.asyncGetRosterIdList().then(res => {
+  //
+});
 ```
 
-##### RecoveryState
+#### 获取好友信息
 
-```
-橡皮的可还原状态发生变更
-```
-
-##### WidgetAction
-
-```
-有文件发生变化，例如插入、删除等
+```ts
+im.rosterManage.asyncGetRosterInfo(state.sid).then(res => {
+  //
+})
 ```
 
-#### WidgetScroll
+#### 用户注册
 
+```ts
+rosterManage.asyncRegester({
+  username,
+  password
+}).then(() => {
+  //
+});
 ```
-文件滚动事件发生，ScrollToTop 为 1 表示滚动顶部，ScrollToBottom 为 1 标识滚动到了底部
+
+#### 根据id列表获取用户详细信息
+
+```ts
+im.rosterManage.asnycGetRosterListDetailByIds(rosterIdList).then(res => {
+  //
+});
 ```
+
+#### 根据id获取聊天信息
+
+```ts
+const rosterMessages = im.rosterManage.getRosterMessageByRid(uid);
+```
+
+#### 读取消息
+
+```ts
+im.rosterManage.readRosterMessage(uid);
+```
+
+#### 删除好友
+
+```ts
+im.rosterManage
+  .asyncDeleteRoster({ user_id })
+  .then(() => {
+    alert("好友已删除");
+  });
+```
+
+#### 获取缓存的所有新用户
+
+```ts
+const userMaps = im.rosterManage.getAllRosterDetail();
+```
+
+#### 撤回消息，只能撤回5分钟内的
+
+```ts
+im.rosterManage.recallMessage(user_id, message_id);
+```
+
+#### 删除消息
+
+```ts
+im.rosterManage.deleteMessage(user_id, message_id);
+```
+
+#### 获取用户的未读数
+
+```ts
+const unreadCount = im.rosterManage.getUnreadCount(user_id);
+```
+
+#### 设置消息成未读
+
+```ts
+im.rosterManage.unreadMessage(user_id, message_id);
+```
+
+#### 获取好友信息
+
+```ts
+const roserInfo = im.rosterManage.getRosterInfo(user_id);
+```
+
+#### 获取好友申请列表
+
+```ts
+im.rosterManage
+  .asyncGetApplyList({ cursor: "" })
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 获取黑名单
+
+```ts
+im.rosterManage
+  .asyncGetBlockedlist()
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 加入黑名单
+
+```ts
+im.rosterManage
+  .asyncBlockeAdd(user_id)
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 移除黑名单
+
+```ts
+im.rosterManage
+  .asyncBlockeRemove(user_id)
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 请求加为好友
+
+```ts
+im.rosterManage
+  .asyncApply({ user_id, alias })
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 通过好友申请
+
+```ts
+im.rosterManage
+  .asyncAccept({ user_id })
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 拒绝好友申请
+
+```ts
+im.rosterManage
+  .asyncDecline({ user_id })
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 按名称搜索用户
+
+```ts
+im.rosterManage
+  .asyncSearchRosterByName({ username })
+  .then((res = []) => {
+    //
+  });
+```
+
+#### 按ID搜索用户
+
+```ts
+im.rosterManage
+  .asyncSearchRosterById({ user_id })
+  .then((res = []) => {
+    //
+  });
+```
+
+### groupManager
+
+#### 获取群信息
+
+```ts
+im.groupManage.asyncGetGroupInfo(group_id, fromServer).then(res => {
+  //
+})
+```
+
+#### 获取加入的群组
+
+```ts
+im.groupManage.asyncGetJoinedGroups().then(res => {
+  //
+});
+```
+
+#### 打开群组
+
+```ts
+// 此方法会准备群组聊天界面的一些必备信息。
+im.groupManage.openGroup(group_id);
+```
+
+#### 获取缓存的所有群组详情
+
+```ts
+const allGroupMap = im.groupManage.getAllGroupDetail();
+```
+
+#### 获取群组成员（异步）
+
+```ts
+im.groupManage.asyncGetGroupMembers(group_id, fromServer).then(res => {
+  //
+});
+```
+
+#### 获取群组成员（同步）
+
+```ts
+const members = im.groupManage.getGroupMembers(group_id);
+```
+
+#### 按id获取群组详情
+
+```ts
+im.groupManage.asyncGetGroupListDetail(groupIds).then(res => {
+  //
+});
+```
+
+#### 获取群消息
+
+```ts
+const groupMessages = rootState.im.groupManage.getGruopMessage(group_id);
+```
+
+#### 将群消息设置已读
+
+```ts
+im.groupManage.readGroupMessage(group_id)
+```
+
+#### 撤回消息
+
+```ts
+im.groupManage.recallMessage(group_id, message_id)
+```
+
+#### 获取群未读消息数
+
+```ts
+const unreadCount = im.groupManage.getUnreadCount(group_id);
+```
+
+#### 获取群管理员列表
+
+```ts
+im.groupManage.asyncGetAdminList({ group_id }).then(res => {
+  //
+})
+```
+
+#### 群添加管理员
+
+```ts
+im.groupManage.asyncAdminAdd({
+  group_id,
+  user_list
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 移除管理员
+
+```ts
+im.groupManage.asyncAdminRemove({ group_id, user_list }).then(() => {
+  //
+});
+```
+
+#### 获取群公告详情
+
+```ts
+im.groupManage.asyncGetAnouncementById({ announcement_id, group_id }).then(res => {
+  //
+});
+```
+
+#### 删除群公告
+
+```ts
+im.groupManage
+  .asyncAnouncementDelete({ group_id, announcement_id })
+  .then(() => {
+    //
+  });
+```
+
+#### 添加群公告
+
+```ts
+im.groupManage.asyncAnnouncementEdit({ title, content, group_id })
+  .then(() => {
+    //
+  });
+```
+
+#### 群公告列表
+
+```ts
+im.groupManage.asyncGetAnnouncementList({ group_id }).then((res = []) => {
+  //
+});
+```
+
+#### 创建群组
+
+```ts
+im.groupManage.asyncCreate({
+  name,
+  type,
+  avatar,
+  description,
+  user_list,
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 解散群组
+
+```ts
+im.groupManage.asyncDestroy({ group_id })
+  .then(() => {
+    alert("您已解散了此群。。");
+  });
+```
+
+#### 获取群组详情
+
+```ts
+im.groupManage.asyncGetInfo({ group_id }).then(res => {
+  //
+});
+```
+
+#### 更新群头像
+
+```ts
+im.groupManage.asyncUpdateAvatar({
+  group_id,
+  value,
+})
+  .then(() => {
+    alert("更新头像完成");
+  });
+```
+
+#### 更新群描述
+
+```ts
+im.groupManage.asyncUpdateDescription({
+  group_id,
+  value
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 更新群名称
+
+```ts
+im.groupManage.asyncUpdateName({
+  group_id,
+  value
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 获取群成员
+
+```ts
+im.groupManage.asyncGetMemberList(group_id, fromServer).then(res => {
+  //
+});
+```
+
+#### 设置群消息免打扰情况
+
+```ts
+im.groupManage.asyncGroupMsgMutemode({
+  group_id,
+  msg_mute_mode
+})
+  .then(() => {
+    this.groupInfo.msg_mute_mode = this.groupInfo.msg_mute_mode ? 0 : 2;
+  });
+```
+
+#### 获取群黑名单
+
+```ts
+im.groupManage.asyncGroupBannedList({ group_id }).then(res => {
+  //
+});
+```
+
+#### 禁言群成员
+
+```ts
+im.groupManage.asyncGroupBab({ group_id, duration, user_list }).then(() => {
+  //
+});
+```
+
+#### 解除成员
+
+```ts
+im.groupManage.asyncGroupUnban({ group_id, user_list }).then(() => {
+  //
+});
+```
+
+#### 设置群成员是否可以邀请
+
+```ts
+im.groupManage.asyncUpdateAllowMemberInvitation({
+  group_id,
+  value
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 设置群成员是否可以修改群信息
+
+```ts
+im.groupManage.asyncUpdateAllowMemberModify({
+  group_id,
+  value
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 设置群是否开启已读模式
+
+```ts
+im.groupManage.asyncUpdateEnableReadack({
+  group_id,
+  value
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 设置群历史是否可见
+
+```ts
+im.groupManage.asyncUpdateHistoryVisible({
+  group_id,
+  value
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 设置入群是否需要申请
+
+```ts
+im.groupManage.asyncUpdateRequireadminapproval({
+  group_id,
+  apply_approval
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 更换群主
+
+```ts
+im.groupManage.asyncOwnerTransfer({
+  group_id,
+  new_owner
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 申请加入群
+
+```ts
+im.groupManage.asyncApply({ group_id, reason })
+  .then(() => {
+    //
+  });
+```
+
+#### 同意/拒绝申请用户加入群
+
+```ts
+im.groupManage.asyncApplyHandle({
+  approval: true / false,
+  user_id,
+  group_id
+}).then(() => {
+  //
+});
+```
+
+#### 获取群黑名单
+
+```ts
+im.groupManage.asyncGroupBockedlist({ group_id }).then(res => {
+  //
+});
+```
+
+#### 将成员加入黑名单
+
+```ts
+im.groupManage.asyncGroupBlock({ group_id, user_list }).then(() => {
+  //
+});
+```
+
+#### 解除黑名单
+
+```ts
+im.groupManage.asyncGroupUnblock({ group_id, user_list })
+  .then(() => {
+    //
+  });
+```
+
+#### 踢出群组
+
+```ts
+im.groupManage.asyncKick({ group_id, user_list }).then(() => {
+  //
+});
+```
+
+#### 获取群邀请列表
+
+```ts
+this.im.groupManage.asyncGetInvitationList().then(res => {
+  //
+});
+```
+
+#### 邀请成员加入群
+
+```ts
+im.groupManage.asyncInvite({ group_id, user_list }).then(() => {
+});
+```
+
+#### 同意/拒绝群邀请
+
+```ts
+im.groupManage.asyncInviteHandle({
+  approval: true,
+  user_id,
+  group_id
+}).then(() => {
+  //
+});
+```
+
+#### 退出群
+
+```ts
+im.groupManage.asyncLeave({ group_id })
+  .then(() => {
+    //
+  });
+```
+
+#### 修改群名片
+
+```ts
+im.groupManage.asyncUpdateDisplayName({
+  group_id,
+  value
+})
+  .then(() => {
+    //
+  });
+```
+
+#### 获取群申请列表
+
+```ts
+im.groupManage.asncGetApplicationList({ group_list }).then(rs => {
+  //
+});
+```
+
+#### 获取群文件
+
+```ts
+im.groupManage.asyncGetFileList({ group_id }).then((res = []) => {
+  //
+});
+```
+
+#### 删除群文件
+
+```ts
+im.groupManage.asyncFileDelete({ file_list, group_id }).then(() => {
+  //
+});
+```
+
+### sysManager
+
+#### 发送好友消息
+
+```ts
+im.sysManage.sendRosterMessage({
+  type,
+  uid,
+  content,
+  attachment
+});
+```
+
+#### 发送群消息
+
+```ts
+im.sysManage.sendGroupMessage({
+  type,
+  gid,
+  content,
+  attachment
+});
+```
+
+#### 群发送@消息
+
+```ts
+im.sysManage.sendMentionMessage({
+  gid,
+  txt,
+  mentionAll,
+  mentionList,
+  mentionedMessage,
+  pushMessage,
+  senderNickname
+});
+```
+
+#### 发送输入状态消息
+
+```ts
+im.sysManage.sendInputStatusMessage(roster_id, "nothing" / "typing");
+```
+
+#### 转发消息
+
+```ts
+im.sysManage.forwardMessage({
+  uid,
+  gid, //2选1
+  mid,
+});
+```
+
+#### 请求历史消息
+
+```ts
+im.sysManage.requireHistoryMessage(roster_id / group_id, mid);
+```
+
+#### 获取所有消息未读状态
+
+```ts
+const allAcks = im.sysManage.getAllMessageStatus() || {};
+```
+
+#### 获取群文件上传url
+
+```ts
+im.sysManage.asyncGetGroupAvatarUploadUrl({
+  group_id,
+  "access-token"
+})
+  .then(res => {
+    //
+  });
+```
+
+#### 获取聊天文件上传地址
+
+```ts
+im.sysManage.asyncGetFileUploadChatFileUrl({
+  file_type,
+  to_id,
+  to_type
+})
+  .then(res => {
+    //
+  });
+```
+
+#### 上传文件
+
+```ts
+im.sysManage.asyncFileUpload({
+  file,
+  fileType,
+  to_id,
+  toType: "chat",
+  chatType: "roster"
+})
+  .then(res => {
+    //
+  })
+```
+
+#### 拼装图片路径
+
+```ts
+const image = im.sysManage.getImage({ avatar, type = 'roster', thumbnail = true });
+```
+
+### userManager
+#### 获取登录用户的token
+```ts
+const token =  im.userManage.getToken();
+```
+#### 获取登录用户的uid
+```ts
+const cuid = im.userManage.getUid();
+```
+#### 获取appid
+```ts
+const appid = im.userManage.getAppid();
+```
+#### 获取最近回话列表
+```ts
+const list = im.userManage.getConversationList();
+```
+
+#### 发送验证码
+
+```ts
+im.userManage
+  .asyncUserSendSms({
+    mobile,
+  })
+  .then(() => {
+    //
+  });
+```
+
+#### 发送验证码（通过图片验证码）
+
+```ts
+im.userManage
+  .asyncCaptchaSms({
+    captcha,
+    image_id,
+    mobile,
+  })
+  .then(() => {
+    //
+  });
+```
+
+#### 检查用户名是否可用
+
+```ts
+im.userManage.asyncUserNameCheck(username).then(() => {
+  //
+});
+```
+
+#### 绑定手机号-使用签名绑定
+
+```ts
+im.userManage.asyncUserMobileBindSign({
+  mobile,
+  sign,
+}).then(() => {
+  //
+});
+```
+
+#### 手机号验证码登录
+
+```ts
+im.userManage.asyncUserMobileLogin({
+  captcha,
+  mobile
+})
+  .then(res => {
+    //
+  });
+```
+
+#### 更新手机号
+
+```ts
+im.userManage
+  .asyncUpdateMobile({ mobile })
+  .then(() => {
+    //
+  });
+```
+
+#### 更新头像
+
+```ts
+im.userManage
+  .asyncUpdateAvatar({
+    avatar
+  })
+  .then(() => {
+    //
+  });
+```
+
+#### 更新昵称
+
+```ts
+im.userManage.asyncUpdateNickName({ nick_name }).then(() => {
+  //
+});
+```
+
+#### 获取用户profile
+
+```ts
+im.userManage.asyncGetProfile(true).then(res => {
+  //
+})
+```
+
+#### 更新用户profile
+
+```ts
+im.userManage.asyncUpdateProfile({
+  username,
+  avatar
+}).then(res => {
+  //
+})
+```
+
+#### 获取用户设置信息
+
+```ts
+im.userManage.asyncGetSettings().then(res => {
+  //
+})
+```
+
+#### 修改用户设置
+
+```ts
+im.userManage
+  .asyncUpdateSettings({
+    "auth_answer": "string",
+    "auth_mode": 0,
+    "auth_question": "string",
+    "auto_download": true,
+    "group_confirm": true,
+    "id": 0,
+    "no_push": true,
+    "no_push_detail": true,
+    "no_push_end_hour": 0,
+    "no_push_start_hour": 0,
+    "no_sounds": true,
+    "push_nick_name": "string",
+    "user_id",
+    "vibratory": true
+  }).then(() => {
+    //
+  });
+```
+
+### chatroomManage
+
+#### 创建聊天室
+
+```ts
+im.chatroomManage.create(name).then(() => {
+  //
+});
+```
+
+#### 加入聊天室
+
+```ts
+im.chatroomManage.join(group_id).then(() => {
+  // 
+})
+```
+
+#### 退出聊天室
+
+```ts
+im.chatroomManage.leave(group_id).then(() => {
+  // 
+})
+```
+
+#### 解散聊天室
+
+```ts
+im.chatroomManage.destroy(group_id).then(() => {
+  // 
+})
+```
+
+### 字段说明
+
+| 字段                | 类型        | 说明                                                         |
+| --- | ----| --- |
+| fromServer          | boolean     | true表示从服务器取数据， false表示从本地缓存取数据           |
+| apply_approval      | 0 \| 1 \| 2 | 入群申请审批设置。0:同意所有申请 1:需要管理员确认 2:拒绝所有申请 |
+| 禁言群成员 duration | number | 禁言时长，单位为分钟。-1 为永久禁言                     |
+

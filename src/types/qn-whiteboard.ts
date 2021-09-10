@@ -188,11 +188,16 @@ export enum JoinRoomStatus {
   Close = 'close'
 }
 
+export interface JoinRoomCallbackRes {
+  status: JoinRoomStatus;
+  event: any
+}
+
 /**
  * 加入房间 WebSocket 状态
  */
 export interface JoinRoomCallback {
-  (status: JoinRoomStatus): void
+  (joinRoomCallbackRes: JoinRoomCallbackRes): void
 }
 
 /**

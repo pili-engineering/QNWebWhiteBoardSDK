@@ -1,7 +1,6 @@
 import { Button, Input } from 'antd';
 import { useCallback, useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-// @ts-ignore
 import * as eruda from 'eruda';
 import { storeContext } from '../../store';
 import css from './index.module.scss';
