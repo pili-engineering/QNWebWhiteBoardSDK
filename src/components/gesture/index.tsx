@@ -20,8 +20,8 @@ const Gesture: React.FC<GestureProps> = props => {
 
   const setPenType = useCallback((index: number) => {
     const pointers = [
-      PenType.Pointer1,
       PenType.Pointer2,
+      PenType.Pointer1,
       PenType.Pointer3,
       PenType.Pointer4
     ];
