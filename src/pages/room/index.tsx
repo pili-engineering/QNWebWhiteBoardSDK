@@ -59,34 +59,6 @@ const Room = () => {
           payload: whiteboardClient
         });
         QNWhiteboardLog('loading ok');
-        fetch('https://docs.qnsdk.com/xz.pdf')
-          .then(response => response.blob())
-          .then(blob => {
-            const file = new File([blob], Math.random() + '.pdf');
-            const superior = Object.assign(
-              whiteboardClient.controller.room,
-              whiteboardClient.controller.me
-            );
-            whiteboardClient.uploadFile({
-              file,
-              superior,
-              left: 100,
-              top: 200,
-              width: 800,
-              height: 1000,
-              callback(error?: string) {
-                if (error) {
-                  Modal.warning({
-                    title: '上传文件出错',
-                    content: JSON.stringify(error)
-                  });
-                } else {
-                  message.success('文件上传成功~');
-                }
-                setUploadFileSpinning(false);
-              }
-            })
-          })
         setRoomLoading(false);
       }
     }, [whiteboardClient, curDocument, dispatch]);
