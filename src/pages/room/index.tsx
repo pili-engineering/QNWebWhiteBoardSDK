@@ -101,10 +101,10 @@ const Room = () => {
         whiteboardClient.uploadFile({
           file: event.target.files[0],
           superior,
-          left: 100,
-          top: 200,
-          width: 800,
-          height: 1000,
+          left: 200,
+          top: 400,
+          width: 1200,
+          height: 1200,
           callback(error?: string) {
             if (error) {
               Modal.warning({
@@ -113,6 +113,10 @@ const Room = () => {
               });
             } else {
               message.success('文件上传成功~');
+              const inputElement = uploadFileElement.current;
+              if (inputElement) {
+                inputElement.value = ''
+              }
             }
             setUploadFileSpinning(false);
           }
@@ -466,10 +470,15 @@ const Room = () => {
       <RoomLoading loading={roomLoading} />
 
       {
-        activeWidget && <Button
+       activeWidget && <Button
           type='primary'
           size='small'
-          className={css.deleteWidgetBtn}
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            zIndex: 99,
+          }}
           onClick={deleteWidget}
         >删除</Button>
       }
