@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { QNWhiteboardLog } from '../utils/log';
+import { log } from '../utils';
 
 export interface ActiveWidget {
   isDelete: boolean;
@@ -21,7 +21,7 @@ const useWidgetActivity = (whiteboardClient: any) => {
 
   useEffect(() => {
     function handleWidgetActivity(event: number, params: ActiveWidget) {
-      QNWhiteboardLog('handleWidgetActivity params', params);
+      log('handleWidgetActivity params', params);
       if ([1, 2].includes(params.type)) {
         setActiveWidget(params);
       }

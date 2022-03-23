@@ -1,7 +1,7 @@
 import { Popover } from 'antd';
 import React, { useCallback, useContext } from 'react';
 import { storeContext } from '../../store';
-import { PenType } from '../../types/qn-whiteboard';
+import { PenType } from 'qnweb-whiteboard';
 import Icon from '../icon';
 import PenPanel, { PenPanelProps } from '../pen-panel';
 

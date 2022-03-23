@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
-import { QNWhiteboardLog } from '../utils/log';
+import { log } from '../utils';
 
 export type WhiteboardSize = {
   maxHeight?: number;
@@ -18,7 +18,7 @@ const useWhiteboardSizeChanged = (whiteboardClient: any, showToast?: boolean) =>
   useEffect(() => {
     function handleWhiteboardSize(event: number, params: WhiteboardSize) {
       if (!whiteboardSize) {
-        QNWhiteboardLog('handleWhiteboardSize params', params);
+        log('handleWhiteboardSize params', params);
         setWhiteboardSize(params);
       }
     }

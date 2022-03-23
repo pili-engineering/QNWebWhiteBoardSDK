@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
-import { QNWhiteboardLog } from '../utils/log';
+import { log } from '../utils';
 
 interface WidgetScrollParams {
   scrollToBottom: 0 | 1;
@@ -12,7 +12,7 @@ const useWidgetScroll = (whiteboardClient: any) => {
   const [widgetScrollParams, setWidgetScrollParams] = useState<WidgetScrollParams>();
   useEffect(() => {
     function handleWidgetScroll(event: number, params: WidgetScrollParams) {
-      QNWhiteboardLog('handleWidgetScroll', event, params);
+      log('handleWidgetScroll', event, params);
       setWidgetScrollParams(params);
     }
 

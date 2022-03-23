@@ -1,7 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
+import { JoinRoomCallbackRes, JoinRoomStatus } from 'qnweb-whiteboard';
+import QNWhiteboard from 'qnweb-whiteboard';
+
+import { log } from '../utils';
 import { storeContext } from '../store';
-import { JoinRoomCallbackRes, JoinRoomStatus } from '../types/qn-whiteboard';
-import { QNWhiteboardLog } from '../utils/log';
 
 /**
  * 加入房间
@@ -15,7 +17,7 @@ const useJoinedRoom = () => {
 
   useEffect(() => {
     function joinRoomCallback(res: JoinRoomCallbackRes) {
-      QNWhiteboardLog('joinRoomCallbackRes', res);
+      log('joinRoomCallbackRes', res);
       if (res.status === JoinRoomStatus.Open) {
         setIsJoined(true);
       } else {
@@ -26,14 +28,14 @@ const useJoinedRoom = () => {
     if (whiteboardClient) {
       const roomToken = new URLSearchParams(window.location.search).get('roomToken');
       const roomTitle = new URLSearchParams(window.location.search).get('roomTitle');
-      QNWhiteboardLog('roomToken', roomToken);
-      QNWhiteboardLog('useJoinedRoom whiteboardClient', whiteboardClient);
+      log('roomToken', roomToken);
+      log('useJoinedRoom whiteboardClient', whiteboardClient);
       setRoomToken(roomToken);
       whiteboardClient.joinRoom(roomToken, joinRoomCallback, {
         title: roomTitle || ''
       });
     } else {
-      const qnWhiteboard = new window.QNWhiteboard();
+      const qnWhiteboard = new QNWhiteboard();
       setWhiteboardClient(qnWhiteboard);
     }
     return () => {
