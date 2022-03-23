@@ -36,7 +36,7 @@ console.log(QNWhiteboard.version)
 
 ## 配置 wasm 资源
 
-wasm 默认部署到 [unpkg.com](https://unpkg.com/qnweb-whiteboard) 下：https://unpkg.com/qnweb-whiteboard@\<version\>/build/qnweb-whiteboard.umd.js
+wasm 默认部署到 [unpkg.com](https://unpkg.com/qnweb-whiteboard) 下：https://unpkg.com/qnweb-whiteboard@<version>/build/qnweb-whiteboard.umd.js
 
 可以通过如下方式查看 wasm 资源部署路径：
 
