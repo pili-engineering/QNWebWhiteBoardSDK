@@ -2,8 +2,8 @@ import { Modal } from 'antd';
 import * as eruda from 'eruda';
 import { useContext, useEffect, useRef } from 'react';
 import { storeContext } from '../store';
-import { JoinRoomStatus } from '../types/qn-whiteboard';
-import { QNWhiteboardLog } from '../utils/log';
+import { JoinRoomStatus } from 'qnweb-whiteboard';
+import { log } from '../utils';
 import { WhiteboardDocument } from './usePageListChanged';
 
 interface Props {
@@ -51,7 +51,7 @@ const useLoadTime = ({ webassemblyReady, isJoined, roomError, curDocument }: Pro
     if (state.isDebug) {
       if (webassemblyReady) { // webassembly 资源加载花费的时间
         webassemblyTimeSpent.current = getTimeSpent();
-        QNWhiteboardLog('webassemblyTimeSpent', webassemblyTimeSpent.current);
+        log('webassemblyTimeSpent', webassemblyTimeSpent.current);
       }
     }
   }, [state.isDebug, webassemblyReady]);
@@ -63,7 +63,7 @@ const useLoadTime = ({ webassemblyReady, isJoined, roomError, curDocument }: Pro
     if (state.isDebug) {
       if (isJoined) { // 加入房间花费的时间
         joinedRoomTimeSpent.current = getTimeSpent();
-        QNWhiteboardLog('joinedRoomTimeSpent', joinedRoomTimeSpent.current);
+        log('joinedRoomTimeSpent', joinedRoomTimeSpent.current);
       } else {
         if (roomError) {
           const webSocketError = [

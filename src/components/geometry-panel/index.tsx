@@ -2,7 +2,7 @@ import { Divider } from 'antd';
 import classNames from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import { storeContext } from '../../store';
-import { GeometryMode } from '../../types/qn-whiteboard';
+import { GeometryMode } from 'qnweb-whiteboard';
 import Icon from '../icon';
 import PenPanel from '../pen-panel';
 import './index.scss';

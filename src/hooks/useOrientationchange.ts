@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { QNWhiteboardLog } from '../utils/log';
+import { log } from '../utils';
 
 /**
  * 监听屏幕转动
@@ -12,7 +12,7 @@ const useOrientationchange = (whiteboardClient: any) => {
    */
   useEffect(() => {
     function handleOrientationchange() {
-      QNWhiteboardLog('handleOrientationchange');
+      log('handleOrientationchange');
       setOrientationAngle(window.screen.orientation.angle);
     }
 

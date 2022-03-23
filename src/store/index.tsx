@@ -1,6 +1,6 @@
 import React, { useEffect, useReducer } from 'react';
-import { GeometryMode, InputMode, PenType } from '../types/qn-whiteboard';
-import { QNWhiteboardLog } from '../utils/log';
+import { GeometryMode, InputMode, PenType } from 'qnweb-whiteboard';
+import { log } from '../utils';
 
 interface StoreProps extends React.HTMLAttributes<HTMLDivElement> {
 }
@@ -89,10 +89,20 @@ export function reducer(state: State, action: Action) {
   return state;
 }
 
-const Index = (props: StoreProps) => {
+const Store = (props: StoreProps) => {
   const { children } = props;
   const [state, dispatch] = useReducer(reducer, defaultState);
   const { penType, penSize, penColor, whiteboardClient, rubberSize, inputMode, geometryMode } = state;
+
+  /**
+   * 切换白板输入模式
+   */
+  useEffect(() => {
+    if (whiteboardClient) {
+      log('inputMode', inputMode);
+      whiteboardClient.setInputMode(inputMode);
+    }
+  }, [whiteboardClient, inputMode]);
 
   /**
    * 设置画笔
@@ -103,7 +113,7 @@ const Index = (props: StoreProps) => {
       size: penSize,
       color: penType === 1 ? `#7f${penColor.replace('#', '')}` : `#ff${penColor.replace('#', '')}`
     };
-    QNWhiteboardLog('style', style);
+    log('style', style);
     if (whiteboardClient) {
       whiteboardClient.setPenStyle(style);
     }
@@ -123,24 +133,17 @@ const Index = (props: StoreProps) => {
    */
   useEffect(() => {
     if (whiteboardClient && inputMode === InputMode.Geometry) {
-      QNWhiteboardLog('geometryMode', geometryMode);
       whiteboardClient.setGeometryMode(geometryMode);
+      dispatch({
+        type: 'updatePenType',
+        payload: PenType.WritingPen
+      });
     }
-  }, [whiteboardClient, inputMode, geometryMode]);
-
-  /**
-   * 切换白板输入模式
-   */
-  useEffect(() => {
-    if (whiteboardClient) {
-      QNWhiteboardLog('inputMode', inputMode);
-      whiteboardClient.setInputMode(inputMode);
-    }
-  }, [whiteboardClient, inputMode]);
+  }, [whiteboardClient, inputMode, geometryMode, penSize, penColor]);
 
   return <storeContext.Provider value={{ state, dispatch }}>
     {children}
   </storeContext.Provider>;
 };
 
-export default Index;
+export default Store;

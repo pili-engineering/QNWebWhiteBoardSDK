@@ -2,6 +2,8 @@ import { Button, Input } from 'antd';
 import { useCallback, useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import * as eruda from 'eruda';
+import QNWhiteboard from 'qnweb-whiteboard';
+
 import { storeContext } from '../../store';
 import css from './index.module.scss';
 
@@ -43,37 +45,36 @@ const Home = () => {
    */
   const joinRoom = () => {
     let pushURL = `/room?roomToken=${roomToken}&isDebug=${state.isDebug}`;
-    if (roomTitle) pushURL += `&roomTitle=${roomTitle}`
+    if (roomTitle) pushURL += `&roomTitle=${roomTitle}`;
     history.push(pushURL);
-  }
+  };
 
   return <div className={css.container}>
     <h1 onClick={openDebug} className={css.title}>七牛白板 demo 体验</h1>
     <Input
       value={roomToken}
       onChange={e => setRoomToken(e.target.value)}
-      placeholder='请输入roomToken'
+      placeholder="请输入roomToken"
       style={{ marginBottom: 10 }}
     />
     <Input
       value={roomTitle}
       onChange={e => setRoomTitle(e.target.value)}
-      placeholder='请输入房间名'
+      placeholder="请输入房间名"
       style={{ marginBottom: 10 }}
     />
     <Button
-      type='primary'
+      type="primary"
       block
       onClick={joinRoom}
       style={{ marginBottom: 10 }}
     >点击进入房间</Button>
     <Button
-      type='primary'
+      type="primary"
       block
       onClick={generateRoomToken}
     >点击随机生成 roomToken</Button>
-    <div style={{ marginTop: 10 }} className={css.version}>demo version: {version}</div>
-    <div className={css.version}>sdk version: {window.QNWhiteboard.version}</div>
+    <div className={css.version}>sdk version: {QNWhiteboard.version}</div>
   </div>;
 };
 

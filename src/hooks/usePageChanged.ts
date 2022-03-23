@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { QNWhiteboardLog } from '../utils/log';
+import { log } from '../utils';
 
 const usePageChanged = (whiteboardClient: any) => {
   useEffect(() => {
     function handlerPageChanged(event: number, params: any) {
-      QNWhiteboardLog('handlerPageChanged', event, params);
+      log('handlerPageChanged', event, params);
     }
 
     if (whiteboardClient) {

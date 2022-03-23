@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { QNWhiteboardLog } from '../utils/log';
+import { log } from '../utils';
 
 export interface WhiteboardPage {
   meetingId: string;
@@ -27,14 +27,14 @@ const usePageListChanged = (whiteboardClient: any) => {
      */
     function handlePageListChanged(event: number, params: WhiteboardPage[]) {
       const documents = params[0]?.documents || [];
-      QNWhiteboardLog('usePageListChanged documents', documents);
+      log('usePageListChanged documents', documents);
       setDocuments(documents);
     }
 
     if (whiteboardClient) {
       whiteboardClient.registerEvent(whiteboardClient.controller.Event.PageListChanged, handlePageListChanged);
     }
-    QNWhiteboardLog('usePageListChanged whiteboardClient', whiteboardClient);
+    log('usePageListChanged whiteboardClient', whiteboardClient);
     return () => {
       if (whiteboardClient) {
         whiteboardClient.unregisterEvent(whiteboardClient.controller.Event.PageListChanged, handlePageListChanged);

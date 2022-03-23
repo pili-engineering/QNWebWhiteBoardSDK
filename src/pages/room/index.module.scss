@@ -21,6 +21,7 @@
   background-color: #fff;
   z-index: 999;
   transition: transform 0.3s;
+  width: fit-content;
 }
 
 .menuBar {
@@ -33,6 +34,13 @@
 }
 
 .menuExpandSlip {
+  text-align: center;
+  padding: 5px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toolbarToggle {
   text-align: center;
   padding: 5px 0;
   cursor: pointer;
@@ -67,7 +75,7 @@
   cursor: pointer;
 }
 
-.featureBar {
+.bgColorSetting {
   width: 100px;
   height: 40px;
   border-radius: 4px;

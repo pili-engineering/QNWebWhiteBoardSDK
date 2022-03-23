@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { Switch, BrowserRouter, Route, useLocation } from 'react-router-dom';
+import QNWhiteboard  from 'qnweb-whiteboard';
+
 import Home from './pages/home';
 import Room from './pages/room';
 
@@ -15,17 +17,25 @@ const Routes = () => {
     }
   }, [location]);
   return <>
-    <Route exact path='/' component={Home} />
-    <Route path='/room' component={Room} />
+    <Route exact path="/" component={Home}/>
+    <Route path="/room" component={Room}/>
   </>;
 };
 
 function App() {
-  const basename = process.env.NODE_ENV === 'development' ? '/' : `/${window.QNWhiteboard.version}`;
+  const basename = process.env.NODE_ENV === 'development' ? '/' : `/${QNWhiteboard.version}`;
+
+  useEffect(() => {
+    // 设置wasm资源路径
+    QNWhiteboard.setConfig({
+      wasmPath: './'
+    })
+  }, []);
+
   return (
     <BrowserRouter basename={basename}>
       <Switch>
-        <Routes />
+        <Routes/>
       </Switch>
     </BrowserRouter>
   );

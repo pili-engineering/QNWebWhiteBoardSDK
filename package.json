@@ -1,39 +1,39 @@
 {
   "name": "qnweb-whiteboard-demo",
-  "version": "1.0.14",
+  "version": "1.1.0",
   "private": true,
   "homepage": ".",
+  "main": "electron.js",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "antd": "^4.16.2",
     "classnames": "^2.3.1",
     "eruda": "^2.4.1",
+    "qnweb-whiteboard": "^1.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "recoil": "^0.3.1",
     "typescript": "^4.1.2",
+    "vue-cli-plugin-electron-builder": "^2.1.1",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "dev": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "test-sh": "sh preRelease.sh",
-    "production-sh": "sh release.sh"
+    "electron": "electron ."
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {
@@ -53,6 +53,8 @@
     "antd-scss-theme-plugin": "^1.0.8",
     "cross-env": "^7.0.3",
     "customize-cra": "^1.0.0",
-    "react-app-rewired": "^2.1.8"
+    "electron": "13.0",
+    "react-app-rewired": "^2.1.8",
+    "webpack": "^5.41.1"
   }
 }

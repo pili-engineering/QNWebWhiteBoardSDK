@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { QNWhiteboardLog } from '../utils/log';
+import { log } from '../utils';
 import { WhiteboardDocument } from './usePageListChanged';
 
 const useDocumentChange = (whiteboardClient: any, documents: WhiteboardDocument[]) => {
@@ -13,8 +13,8 @@ const useDocumentChange = (whiteboardClient: any, documents: WhiteboardDocument[
      * @param params-返回时string为色值
      */
     function handleDocumentChange(event: number, params: { widgetId: string }) {
-      QNWhiteboardLog('handleDocumentChange', params);
-      QNWhiteboardLog('document size:', whiteboardClient.controller.documentWidth,whiteboardClient.controller.documentHeight);
+      log('handleDocumentChange', params);
+      log('document size:', whiteboardClient.controller.documentWidth,whiteboardClient.controller.documentHeight);
       if (typeof params === 'object' && params !== null) {
         setCurWidgetId(params.widgetId);
       }
@@ -32,8 +32,8 @@ const useDocumentChange = (whiteboardClient: any, documents: WhiteboardDocument[
 
   useEffect(() => {
     const curDocument = documents.find(document => document.documentId === curWidgetId);
-    QNWhiteboardLog('useDocumentChange documents', documents);
-    QNWhiteboardLog('useDocumentChange curDocument', curDocument);
+    log('useDocumentChange documents', documents);
+    log('useDocumentChange curDocument', curDocument);
     setCurDocument(curDocument || documents[0]);
   }, [documents, curWidgetId]);
 
