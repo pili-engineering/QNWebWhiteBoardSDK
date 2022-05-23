@@ -1,2 +1,2 @@
 export * from './WhiteBoardStore';
-export * from './ToolbarStore';
+export * from './type';

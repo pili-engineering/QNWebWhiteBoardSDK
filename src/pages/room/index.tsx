@@ -1,492 +1,407 @@
-import { Button, Drawer, message, Modal, Popover, Spin } from 'antd';
-import classNames from 'classnames';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ColorDotProps } from '../../components/color-dot';
-import ColorDotBar, { Bar } from '../../components/color-dot-bar';
-import Icon from '../../components/icon';
-import RoomLoading from '../../components/room-loading';
-import useBackgroundChange from '../../hooks/useBackgroundChange';
-import useDocumentChange from '../../hooks/useDocumentChange';
-import useJoinedRoom from '../../hooks/useJoinedRoom';
-import useLoadTime from '../../hooks/useLoadTime';
-import usePageListChanged from '../../hooks/usePageListChanged';
-import useWebassemblyReady from '../../hooks/useWebassemblyReady';
-import useWhiteboardSizeChanged from '../../hooks/useWhiteboardSizeChanged';
-import useWidgetActivity from '../../hooks/useWidgetActivity';
-import useWidgetScroll from '../../hooks/useWidgetScroll';
-import { storeContext } from '../../store';
-import { InputMode } from 'qnweb-whiteboard';
-import { log } from '../../utils';
-import css from './index.module.scss';
-import HighlighterPen from '../../components/highlighter-pen';
-import WritingPen from '../../components/writing-pen';
-import Rubber from '../../components/rubber';
-import Geometry from '../../components/geometry';
-import Gesture from '../../components/gesture';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { message, Switch } from 'antd';
+import QNWhiteBoard, { QNCreateInstanceResult } from 'qnweb-whiteboard';
 
-const Room = () => {
-    const [drawerVisible, setDrawerVisible] = useState(false);
-    const { whiteboardClient, isJoined, roomError, roomToken } = useJoinedRoom();
-    const { webassemblyReady } = useWebassemblyReady(whiteboardClient);
-    const { documents } = usePageListChanged(whiteboardClient);
-    const { curDocument } = useDocumentChange(whiteboardClient, documents);
-    const { dispatch } = useContext(storeContext);
-    const uploadFileElement = useRef<HTMLInputElement | null>(null);
-    const [roomLoading, setRoomLoading] = useState(true);
-    const [bgColor, setBgColor] = useState<string>();
-    const { activeWidget, setActiveWidget } = useWidgetActivity(whiteboardClient);
-    useBackgroundChange(whiteboardClient, curDocument);
-    const [uploadFileSpinning, setUploadFileSpinning] = useState(false);
-    useWhiteboardSizeChanged(whiteboardClient, true);
-    useWidgetScroll(whiteboardClient);
-    useLoadTime({
-      webassemblyReady,
-      isJoined,
-      roomError,
-      curDocument
+import { Toolbar, ToolbarProps, RedoUndo } from '../../components';
+
+import styles from './index.module.scss';
+
+const getRouteQuery = (q: string): string => {
+  return new URLSearchParams(window.location.search).get(q) || '';
+};
+
+const gestureMap = { 1: 3, 2: 2, 3: 4, 4: 5 };
+const geometryMap = { 1: 6, 2: 1, 3: 0, 4: 3 };
+
+const Room: React.FC = () => {
+  const queryRef = useRef({
+    appId: getRouteQuery('appId'),
+    meetingId: getRouteQuery('meetingId'),
+    userId: getRouteQuery('userId'),
+    token: getRouteQuery('token'),
+    bucketId: getRouteQuery('bucketId')
+  });
+
+  const [client, setClient] = useState<QNWhiteBoard | null>();
+  const [instance, setInstance] = useState<QNCreateInstanceResult | null>();
+  const [visible, setVisible] = useState(false);
+  const [mode, setMode] = useState<ToolbarProps['mode']>();
+  const [toolPenPencilValue, setToolPenPencilValue] = useState<ToolbarProps['toolPenPencilValue']>({
+    size: 10
+  });
+  const [toolPenMarkValue, setToolPenMarkValue] = useState<ToolbarProps['toolPenMarkValue']>({
+    size: 10
+  });
+  const [toolGestureValue, setToolGestureValue] = useState<ToolbarProps['toolGestureValue']>();
+  const [toolRubberValue, setToolRubberValue] = useState<ToolbarProps['toolRubberValue']>();
+  const [toolGeometryValue, setToolGeometryValue] = useState<ToolbarProps['toolGeometryValue']>();
+  const [pdfChecked, setPDFChecked] = useState(false);
+
+  /**
+   * 注册白板事件回调
+   * @param instance
+   */
+  const registerWhiteBoardEvent = (instance: QNCreateInstanceResult) => {
+    instance.registerWhiteBoardEvent({
+      onWhiteBoardOpened: () => {
+        console.log('白板已打开');
+        message.success('白板打开成功');
+      },
+      onWhiteBoardOpenFailed: () => {
+        console.log('白板打开失败');
+        message.error('白板打开失败');
+      },
+      onWhiteBoardClosed: () => console.log('白板已关闭'),
     });
-    const [whiteboardVisible, setWhiteboardVisible] = useState(true);
-    const [wIsOpen, setWIsOpen] = useState<'open' | 'close'>();
-  const [isExpanded, setIsExpanded] = useState(false);
-    /**
-     * 背景色
-     */
-    const bgColors = [
-      { color: '#000000', text: '黑色' },
-      { color: '#cccccc', text: '灰色' },
-      { color: '#4a4ac5', text: '紫色' },
-      { color: 'transparent', text: '透明' }
-    ];
+  };
 
-    /**
-     * 背景色文本
-     */
-    const bgColorText = bgColors.find(color => color.color === bgColor)?.text || '默认';
+  /**
+   * 注册PPT文件事件回调
+   * @param instance
+   */
+  const registerPPTEvent = (instance: QNCreateInstanceResult) => {
+    instance.registerPPTEvent({
+      onFileLoadedSuccessful: () => {
+        console.log('onFileLoadedSuccessful');
+      },
+      onFileLoadingFailed: () => {
+        console.log('onFileLoadingFailed');
+      },
+      onFileStateChanged: (data) => {
+        console.log('onFileStateChanged', data);
+      },
+    });
+  };
 
-    /**
-     * 初始化完成
-     */
-    useEffect(() => {
-      if (curDocument) {
-        dispatch({
-          type: 'updateWhiteboardClient',
-          payload: whiteboardClient
-        });
-        log('loading ok');
-        setRoomLoading(false);
-      }
-    }, [whiteboardClient, curDocument, dispatch]);
+  /**
+   * 注册PDF文件事件回调
+   * @param instance
+   */
+  const registerPDFEvent = (instance: QNCreateInstanceResult) => {
+    instance.registerPDFEvent({
+      onFileLoadedSuccessful: () => {
+        console.log('onFileLoadedSuccessful');
+      },
+      onFileLoadingFailed: (code) => {
+        console.log('onFileLoadingFailed', code);
+      },
+      onFileStateChanged: (data) => {
+        console.log('onFileStateChanged', data);
+      },
+    });
+  };
 
-    /**
-     * 切换背景色
-     */
-    useEffect(() => {
-      if (whiteboardClient && bgColor) {
-        const bgColorWithOpacity = bgColor === 'transparent' ?
-          '#00000000' :
-          '#ff' + bgColor.replace('#', '');
-        whiteboardClient.setWhiteboardBack(bgColorWithOpacity);
-      }
-    }, [whiteboardClient, bgColor]);
+  /**
+   * 加入房间成功回调
+   */
+  const onJoinSuccess = useCallback(() => {
+    if (!instance) return;
+    message.destroy('joinRoom');
+    message.success('加入房间成功');
+    registerWhiteBoardEvent(instance);
+    registerPPTEvent(instance);
+    registerPDFEvent(instance);
+    instance.openWhiteBoard();
+  }, [instance]);
 
-    /**
-     * 重新创建白板
-     */
-    useEffect(() => {
-      const roomTitle = new URLSearchParams(window.location.search).get('roomTitle');
-      if (wIsOpen === 'open') {
-        console.log('open', document.getElementById('canvasBox'));
-        whiteboardClient.joinRoom(roomToken, null, {
-          title: roomTitle || ''
-        });
-      }
-      if (wIsOpen === 'close') {
-        console.log('close', document.getElementById('canvasBox'));
-        whiteboardClient.leaveRoom();
-      }
-    }, [whiteboardClient, wIsOpen, roomToken]);
+  /**
+   * 加入房间失败回调
+   */
+  const onJoinFailed = () => {
+    message.destroy('joinRoom');
+    message.error('加入房间失败');
+  };
 
-    /**
-     * 点击选择 icon
-     */
-    const setInputMode = (mode: InputMode) => {
-      dispatch({
-        type: 'updateInputMode',
-        payload: mode
+  /**
+   * 初始化类
+   */
+  useEffect(() => {
+    const client = QNWhiteBoard.create();
+    client.controller.setBasePath('./webassembly/whiteboardcanvas.html');
+    setClient(client);
+    setInstance(client.createInstance(queryRef.current.bucketId));
+  }, []);
+
+  /**
+   * 注册房间事件回调
+   */
+  useEffect(() => {
+    if (!client) return;
+    client.registerRoomEvent({
+      onJoinSuccess,
+      onJoinFailed,
+      onRoomStatusChanged: (code) => console.log('onRoomStatusChanged', code),
+      onUserJoin: () => console.log('onUserJoin'),
+      onUserLeave: () => console.log('onUserLeave'),
+    });
+  }, [client, onJoinSuccess]);
+
+  /**
+   * 加入房间
+   */
+  useEffect(() => {
+    if (client) {
+      message.loading({
+        content: '加入房间中...',
+        key: 'joinRoom',
+        duration: 0
       });
+      client.joinRoom(
+        queryRef.current.appId,
+        queryRef.current.meetingId,
+        queryRef.current.userId,
+        queryRef.current.token
+      );
+      return () => {
+        message.destroy('joinRoom');
+        client.leaveRoom();
+      };
+    }
+  }, [client]);
+
+  /**
+   * 铅笔菜单切换
+   * @param value
+   */
+  const onToolPenPencilChange: ToolbarProps['onToolPenPencilChange'] = (value) => {
+    if (!client) return;
+    const penStyle = { type: 0, color: `#FF${value?.color?.slice(1)}`, size: value?.size };
+    console.log('onToolPenPencilChange', value, penStyle);
+    client.setPenStyle(penStyle);
+    setToolPenPencilValue(value);
+  };
+
+  /**
+   * 马克笔菜单切换
+   * @param value
+   */
+  const onToolPenMarkChange: ToolbarProps['onToolPenMarkChange'] = (value) => {
+    if (!client) return;
+    const penStyle = { type: 1, color: `#7F${value?.color?.slice(1)}`, size: value?.size };
+    console.log('onToolPenMarkChange', value, penStyle);
+    client.setPenStyle(penStyle);
+    setToolPenMarkValue(value);
+  };
+
+  /**
+   * 手势菜单切换
+   * @param value
+   */
+  const onToolGestureChange: ToolbarProps['onToolGestureChange'] = (value) => {
+    if (!client) return;
+    const penStyle = {
+      type: gestureMap[value],
+      color: '#FF000000',
+      size: 10
     };
+    console.log('onToolGestureChange', penStyle);
+    client.setPenStyle(penStyle);
+    setToolGestureValue(value);
+  };
 
-    /**
-     * 点击上传文件按钮
-     */
-    const uploadFileClick = () => {
-      uploadFileElement.current?.click();
+  /**
+   * 橡皮菜单切换
+   * @param value
+   */
+  const onToolRubberChange: ToolbarProps['onToolRubberChange'] = (value) => {
+    if (!client) return;
+    client.setEraseSize(value);
+    console.log('onToolGestureChange', value);
+    setToolRubberValue(value);
+  };
+
+  /**
+   * 图形菜单切换
+   * @param value
+   */
+  const onToolGeometryChange: ToolbarProps['onToolGeometryChange'] = (value) => {
+    if (!client) return;
+    const geometryMode = value.geometryMode;
+    const penStyle = {
+      type: 0,
+      color: `#FF${value?.color?.slice(1)}`,
+      size: value?.size
     };
+    if (geometryMode) {
+      client.setGeometryMode(geometryMap[geometryMode]);
+    }
+    console.log('onToolGeometryChange', penStyle);
+    client.setPenStyle(penStyle);
+    setToolGeometryValue(value);
+  };
 
-    /**
-     * 上传文件请求
-     * @param file
-     */
-    const uploadFileRequest = (file: File) => {
-      return new Promise<void>((resolve, reject) => {
-        whiteboardClient.uploadFile({
-          file,
-          left: 200,
-          top: 400,
-          width: 1200,
-          height: 1200,
-          callback(error?: Error) {
-            if (error) {
-              reject(error);
-            } else {
-              resolve();
-            }
-          }
-        });
-      });
+  /**
+   * toolbar 一级菜单切换为铅笔
+   */
+  const onModeChangePenPencil = () => {
+    if (!client) return;
+    const penStyle = {
+      ...toolPenPencilValue,
+      type: 0,
+      color: `#FF${toolPenPencilValue?.color?.slice(1)}`,
     };
+    console.log('onModeChange', mode, penStyle);
+    client.setInputMode(0);
+    client.setPenStyle(penStyle);
+  };
 
-    /**
-     * 选中文件并上传
-     */
-    const onUploadFileChange: React.ChangeEventHandler<HTMLInputElement> = event => {
-      const files = event.target.files || [];
-      if (whiteboardClient) {
-        setUploadFileSpinning(true);
-        uploadFileRequest(files[0]).then(() => {
-          return message.success('文件上传成功~');
-        }).catch(error => {
-          Modal.warning({
-            title: '上传文件出错',
-            content: error.message
-          });
-        }).finally(() => {
-          const inputElement = uploadFileElement.current;
-          if (inputElement) {
-            inputElement.value = '';
-          }
-          setUploadFileSpinning(false);
-        });
-      }
+  /**
+   * toolbar 一级菜单切换为马克笔
+   */
+  const onModeChangePenMark = () => {
+    if (!client) return;
+    const penStyle = {
+      ...toolPenMarkValue,
+      type: 1,
+      color: `#7F${toolPenMarkValue?.color?.slice(1)}`
     };
+    console.log('onModeChange', mode, penStyle);
+    client.setInputMode(0);
+    client.setPenStyle(penStyle);
+  };
 
-    /**
-     * 删除指定页
-     */
-    const deleteDocument = (documentNo: number) => {
-      const documentId = documents.find(
-        document => document.documentNo === documentNo
-      )?.documentId;
-      if (documentId) {
-        whiteboardClient.deleteDocument(documentId);
-      } else {
-        Modal.warning({
-          title: 'deleteDocument',
-          content: 'node documentId'
-        });
-      }
+  /**
+   * toolbar 一级菜单切换为手势
+   */
+  const onModeChangeGesture = () => {
+    if (!client) return;
+    const penStyle = {
+      type: gestureMap[1],
+      color: '#FF000000',
+      size: 10
     };
+    console.log('onModeChange', mode, penStyle);
+    client.setInputMode(0);
+    client.setPenStyle(penStyle);
+  };
 
-    /**
-     * createDocument
-     */
-    const createDocument = (documentNo?: number) => {
-      if (whiteboardClient) {
-        if (documentNo) { // 插入文档
-          const documentId = documents.find(
-            document => document.documentNo === documentNo
-          )?.documentId;
-          if (documentId) {
-            whiteboardClient.insertDocument(documentId);
-          } else {
-            Modal.warning({
-              title: 'createDocument',
-              content: 'node documentId'
-            });
-          }
-        } else { // 创建文档
-          whiteboardClient.newDocument();
-        }
-      } else {
-        Modal.warning({
-          title: 'createDocument',
-          content: 'no whiteboardClient'
-        });
-      }
-    };
+  /**
+   * toolbar 一级菜单切换为几何图形
+   */
+  const onModeChangeGeometry = () => {
+    if (!client) return;
+    const geometryMode = toolGeometryValue?.geometryMode;
+    client.setInputMode(3);
+    if (geometryMode) {
+      client.setGeometryMode(geometryMap[geometryMode]);
+    }
+    client.setPenStyle({
+      type: 0,
+      color: `#FF${toolGeometryValue?.color?.slice(1)}`,
+      size: toolGeometryValue?.size
+    });
+  };
 
-    /**
-     * 切换到上一页
-     */
-    const toggleDocumentPrev = () => {
-      const documentNo = curDocument?.documentNo || 1;
-      const prevNo = documentNo - 1;
-      const documentId = documents.find(document => document.documentNo === prevNo)?.documentId;
-      if (prevNo > 0 && documentId) {
-        whiteboardClient.cutDocument(documentId);
-      }
-    };
+  /**
+   * 点击上传按钮触发选择文件上传
+   */
+  const onModeChangeUpload = () => {
+    const inputFileElement = document.getElementById('inputFile') as HTMLInputElement;
+    inputFileElement.click();
+  };
 
-    /**
-     * 切换到下一页
-     */
-    const toggleDocumentNext = useCallback(() => {
-      const documentNo = curDocument?.documentNo || 1;
-      const nextNo = documentNo + 1;
-      const documentId = documents.find(document => document.documentNo === nextNo)?.documentId;
-      if (nextNo > 0 && documentId) {
-        whiteboardClient.cutDocument(documentId);
-      }
-    }, [documents, curDocument, whiteboardClient]);
+  /**
+   * toolbar 一级菜单切换
+   * @param mode
+   */
+  const onModeChange: ToolbarProps['onModeChange'] = (mode) => {
+    if (!client) return;
+    console.log('onModeChange', mode);
+    if (mode === 'mouse') { // 选择模式
+      client.setInputMode(2);
+    }
+    if (mode === 'penPencil') { // 铅笔
+      onModeChangePenPencil();
+    }
+    if (mode === 'penMark') { // 马克笔
+      onModeChangePenMark();
+    }
+    if (mode === 'gesture') { // 手势
+      onModeChangeGesture();
+    }
+    if (mode === 'rubber') { // 橡皮
+      client.setInputMode(1);
+    }
+    if (mode === 'geometry') { // 几何图形
+      onModeChangeGeometry();
+    }
+    if (mode === 'upload') {
+      onModeChangeUpload();
+    }
+    setMode(mode);
+  };
 
-    /**
-     * 切换到指定页
-     * @param documentNo
-     */
-    const toggleDocument = (documentNo: number) => {
-      const documentId = documents.find(document => document.documentNo === documentNo)?.documentId;
-      if (documentId) {
-        whiteboardClient.cutDocument(documentId);
-      }
-    };
+  /**
+   * 上传文件 input onChange 事件触发
+   * @param event
+   */
+  const onInputFileChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!client) return;
+    client.uploadFile({
+      file: file,
+      left: 100,
+      top: 200,
+      width: 800,
+      height: 1000
+    });
+  };
 
-    /**
-     * 删除 widgetId
-     */
-    const deleteWidget = () => {
-      const widgetId = activeWidget?.widgetId;
-      if (whiteboardClient && widgetId) {
-        whiteboardClient.deleteWidget(widgetId);
-        setActiveWidget(undefined);
-      }
-    };
-
-    /**
-     * 点击清屏
-     */
-    const clearPage = () => {
-      const documentId = curDocument?.documentId;
-      log('curDocument?.documentId', documentId);
-      if (documentId) whiteboardClient.clearPage({
-        widgetId: documentId
-      });
-    };
-
-    /**
-     * 重新创建白板
-     */
-    const onReCreateWhiteboard = () => {
-      if (wIsOpen) {
-        setWIsOpen(wIsOpen === 'open' ? 'close' : 'open');
-      } else {
-        setWIsOpen('close');
-      }
-    };
-
-    return <div className={css.room}>
-
-      {
-        wIsOpen === 'close' ? null : <div className={css.canvasBox} id="canvasBox"/>
-      }
-
-      <div className={classNames(css.menu, { [css.menuExpanded]: isExpanded })}>
-        <div className={css.menuBar}>
-          <Icon
-            type='icon-mouse'
-            className={css.menuIcon}
-            onClick={() => setInputMode(InputMode.Select)}
-          />
-          <WritingPen
-            setInputMode={() => setInputMode(InputMode.Pencil)}
-          />
-          <HighlighterPen
-            setInputMode={() => setInputMode(InputMode.Mark)}
-          />
-          <Gesture
-            setInputMode={() => setInputMode(InputMode.Laser)}
-          />
-          <Rubber
-            setInputMode={() => setInputMode(InputMode.Rubber)}
-          />
-          <Geometry
-            setInputMode={() => setInputMode(InputMode.Geometry)}
-          />
-          <Icon
-            type='icon-upload'
-            className={css.menuIcon}
-            onClick={uploadFileClick}
-          />
-        </div>
-        <div
-          className={css.menuExpandSlip}
-          onClick={() => setIsExpanded(!isExpanded)}
-        >{isExpanded ? '缩起' : '展开'}工具栏</div>
-      </div>
-
-      <Drawer
-        placement="left"
-        closable={true}
-        visible={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-      >
-        <div className={css.drawerDocuments}>
-          <div
-            className={css.drawerDocument}
-            onClick={() => createDocument()}
-          >+
-          </div>
-          {
-            documents.map(document => {
-              const active = document.documentNo === (curDocument?.documentNo || 1);
-              return <div
-                className={classNames(css.drawerDocument, {
-                  [css.active]: active
-                })}
-                key={document.documentId}
-                onClick={() => toggleDocument(document.documentNo)}
-              >
-                <span>{document.documentNo}</span>
-                <Popover
-                  content={
-                    <>
-                      <Button
-                        size="small"
-                        style={{ marginRight: 10 }}
-                        onClick={() => createDocument(document.documentNo)}
-                      >插入</Button>
-                      <Button
-                        size="small"
-                        onClick={() => deleteDocument(curDocument?.documentNo || 1)}
-                      >删除</Button>
-                    </>
-                  }
-                  trigger="click"
-                >
-                  <span className={css.documentBtnMore}>...</span>
-                </Popover>
-              </div>;
-            })
-          }
-        </div>
-      </Drawer>
-
-      <div className={css.pagination}>
-        <Icon
-          onClick={() => setDrawerVisible(!drawerVisible)}
-          type="icon-drawer"
-          className={css.iconDrawer}
-        />
-        <span
-          className={classNames(css.paginationText, css.paginationPre)}
-          onClick={toggleDocumentPrev}
-        >&lt;</span>
-        <span
-          className={css.paginationText}
-        >{curDocument?.documentNo || 1} / {documents.length || 1}</span>
-        {
-          (curDocument?.documentNo || 1) <= documents.length - 1 ?
-            <span
-              className={classNames(css.paginationText, css.paginationNext)}
-              onClick={toggleDocumentNext}
-            >&gt;</span> :
-            <span
-              className={classNames(css.paginationText, css.paginationNext)}
-              onClick={() => createDocument()}
-            >+</span>
-        }
-      </div>
-
-      <div className={css.bgColorSetting}>
-        <Popover
-          trigger="click"
-          content={
-            <ColorDotBar
-              dots={bgColors}
-              bar={Bar.Color}
-              active={bgColor}
-              onChange={(v: ColorDotProps) => {
-                setBgColor(v.color);
-              }}
-            />
-          }
-        >
-          <Button type="primary">设置背景：{bgColorText}</Button>
-        </Popover>
-      </div>
-
-      {
-        uploadFileSpinning && <div className={css.uploadFileSpin}>
-          <Spin tip="文件上传中..." spinning={uploadFileSpinning}/>
-        </div>
-      }
-
-      <Button
-        type="primary"
-        style={{
-          position: 'fixed',
-          right: '25px',
-          bottom: '170px',
-          zIndex: 2
-        }}
-        onClick={onReCreateWhiteboard}
-      >重新创建白板</Button>
-
-      <Button
-        type="primary"
-        style={{
-          position: 'fixed',
-          right: '25px',
-          bottom: '70px',
-          zIndex: 2
-        }}
-        onClick={clearPage}
-      >点击清屏</Button>
-
-      <Button
-        type="primary"
-        style={{
-          position: 'fixed',
-          right: '25px',
-          bottom: '120px',
-          zIndex: 2
-        }}
-        onClick={() => {
-          const roomTitle = new URLSearchParams(window.location.search).get('roomTitle');
-          if (whiteboardVisible) {
-            whiteboardClient.leaveRoom();
-          } else {
-            whiteboardClient.joinRoom(roomToken, null, {
-              title: roomTitle || ''
-            });
-          }
-          setWhiteboardVisible(!whiteboardVisible);
-        }}
-      >{whiteboardVisible ? '退出' : '进入'}房间</Button>
-
-      <input
-        style={{ display: 'none' }}
-        type="file"
-        ref={uploadFileElement}
-        onChange={onUploadFileChange}
-      />
-
-      <RoomLoading loading={roomLoading}/>
-
-      {
-        activeWidget && <Button
-          type="primary"
-          size="small"
-          style={{
-            position: 'fixed',
-            left: 0,
-            top: 0,
-            zIndex: 99,
+  return <div className={styles.container}>
+    <Toolbar
+      fixed="top"
+      mode={mode}
+      visible={visible}
+      toolPenPencilValue={toolPenPencilValue}
+      toolPenMarkValue={toolPenMarkValue}
+      toolGestureValue={toolGestureValue}
+      toolRubberValue={toolRubberValue}
+      toolGeometryValue={toolGeometryValue}
+      onToolPenPencilChange={onToolPenPencilChange}
+      onToolPenMarkChange={onToolPenMarkChange}
+      onToolGestureChange={onToolGestureChange}
+      onToolRubberChange={onToolRubberChange}
+      onToolGeometryChange={onToolGeometryChange}
+      onVisibleChange={setVisible}
+      onModeChange={onModeChange}
+    />
+    <div id="iframeBox" className={styles.box}></div>
+    <div className={styles.bottom}>
+      <div className={styles.bottomLeft}>
+        <RedoUndo
+          className={styles.bottomLeftBar}
+          label="PPT上下页切换:"
+          onUndoButtonClick={() => {
+            if (!instance) return;
+            instance.preStep();
           }}
-          onClick={deleteWidget}
-        >删除</Button>
-      }
-    </div>;
-  }
-;
+          onRedoButtonClick={() => {
+            if (!instance) return;
+            instance.nextStep();
+          }}
+        />
+        <span className={styles.PDFAction}>
+          <Switch
+            checked={pdfChecked}
+            checkedChildren="PDF操作激活中"
+            unCheckedChildren="PDF操作关闭中"
+            onChange={(checked) => {
+              if (!instance) return;
+              instance.setPDFOperationMode(checked);
+              setPDFChecked(checked);
+            }}
+          />
+        </span>
+      </div>
+    </div>
+    <input
+      id="inputFile"
+      type="file"
+      style={{ display: 'none' }}
+      onChange={onInputFileChange}
+    />
+  </div>;
+};
 
 export default Room;
