@@ -4,15 +4,17 @@ class MockApi {
   meetingId: string;
   userId: string;
   bucketId: string;
+  recordId: string;
 
   constructor() {
     // 加入房间参数， 服务端获取
-    this.token = 'ffb8033e73943544a141d04e2618c740';
-    this.appId = 'fd3c029d48a64afeb5b46c24aedc2995';
-    this.meetingId = '93edb58df18f47c5b0b9796e214c6b53';
-    this.userId = 'qiniu-test';
+    this.token = 'af230210566aef8a21f8cf663d3322a3';
+    this.appId = '29d3757f29d14138949f2c17ae14e957';
+    this.meetingId = '05978893594544ca9cf057cad685e7fd';
+    this.userId = 'qiniu-user';
     // 加入白板参数， 服务端获取
-    this.bucketId = '0e46218e-8b9b-4f69-9069-dad89048b901';
+    this.bucketId = '07f5ab4b-5d9d-42fc-be3f-0c64930bf8ca';
+    this.recordId = '60fcf368-00fc-4600-906e-7e4de5d538be';
   }
 }
 

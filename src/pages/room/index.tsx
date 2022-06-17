@@ -1,14 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { message, Switch } from 'antd';
+import { Button, Input, InputRef, message, Modal, Switch } from 'antd';
 import QNWhiteBoard, { QNCreateInstanceResult } from 'qnweb-whiteboard';
 
 import { Toolbar, ToolbarProps, RedoUndo } from '../../components';
+import { getRouteQuery } from '../../utils';
 
 import styles from './index.module.scss';
-
-const getRouteQuery = (q: string): string => {
-  return new URLSearchParams(window.location.search).get(q) || '';
-};
 
 const gestureMap = { 1: 3, 2: 2, 3: 4, 4: 5 };
 const geometryMap = { 1: 6, 2: 1, 3: 0, 4: 3 };
@@ -19,7 +16,8 @@ const Room: React.FC = () => {
     meetingId: getRouteQuery('meetingId'),
     userId: getRouteQuery('userId'),
     token: getRouteQuery('token'),
-    bucketId: getRouteQuery('bucketId')
+    bucketId: getRouteQuery('bucketId'),
+    recordId: getRouteQuery('recordId'),
   });
 
   const [client, setClient] = useState<QNWhiteBoard | null>();
@@ -36,6 +34,9 @@ const Room: React.FC = () => {
   const [toolRubberValue, setToolRubberValue] = useState<ToolbarProps['toolRubberValue']>();
   const [toolGeometryValue, setToolGeometryValue] = useState<ToolbarProps['toolGeometryValue']>();
   const [pdfChecked, setPDFChecked] = useState(false);
+
+  const seekEleRef = useRef<InputRef>(null);
+  const calibrateEleRef = useRef<InputRef>(null);
 
   /**
    * 注册白板事件回调
@@ -92,24 +93,38 @@ const Room: React.FC = () => {
   };
 
   /**
-   * 加入房间成功回调
+   * 注册回放事件回调
+   * @param instance
    */
-  const onJoinSuccess = useCallback(() => {
-    if (!instance) return;
-    message.destroy('joinRoom');
-    message.success('加入房间成功');
-    registerWhiteBoardEvent(instance);
-    registerPPTEvent(instance);
-    registerPDFEvent(instance);
-    instance.openWhiteBoard();
-  }, [instance]);
+  const registerPlaybackEvent = (instance: QNCreateInstanceResult) => {
+    instance.registerPlaybackEvent({
+      onInitFinished: (totalTime) => console.log('onInitFinished', totalTime),
+      onError: (code) => console.log('onError', code),
+      onStatusChanged: (status) => console.log('onStatusChanged', status),
+      onProgress: (data) => console.log('onProgress', data),
+      onBoardSizeChanged: (size) => console.log('onBoardSizeChanged', size),
+      onFileLoadingFailed: (error) => console.log(error)
+    });
+  };
 
   /**
-   * 加入房间失败回调
+   * 注册房间事件回调
+   * @param client
    */
-  const onJoinFailed = () => {
-    message.destroy('joinRoom');
-    message.error('加入房间失败');
+  const registerRoomEvent = (client: QNWhiteBoard) => {
+    client.registerRoomEvent({
+      onJoinSuccess: () => {
+        message.destroy('joinRoom');
+        message.success('加入房间成功');
+      },
+      onJoinFailed: () => {
+        message.destroy('joinRoom');
+        message.error('加入房间失败');
+      },
+      onRoomStatusChanged: (code) => console.log('onRoomStatusChanged', code),
+      onUserJoin: () => console.log('onUserJoin'),
+      onUserLeave: () => console.log('onUserLeave'),
+    });
   };
 
   /**
@@ -117,7 +132,9 @@ const Room: React.FC = () => {
    */
   useEffect(() => {
     const client = QNWhiteBoard.create();
-    client.controller.setBasePath('./webassembly/whiteboardcanvas.html');
+    client.initConfig({
+      path: './webassembly/whiteboardcanvas.html',
+    });
     setClient(client);
     setInstance(client.createInstance(queryRef.current.bucketId));
   }, []);
@@ -127,14 +144,13 @@ const Room: React.FC = () => {
    */
   useEffect(() => {
     if (!client) return;
-    client.registerRoomEvent({
-      onJoinSuccess,
-      onJoinFailed,
-      onRoomStatusChanged: (code) => console.log('onRoomStatusChanged', code),
-      onUserJoin: () => console.log('onUserJoin'),
-      onUserLeave: () => console.log('onUserLeave'),
-    });
-  }, [client, onJoinSuccess]);
+    if (!instance) return;
+    registerWhiteBoardEvent(instance);
+    registerPPTEvent(instance);
+    registerPDFEvent(instance);
+    registerPlaybackEvent(instance);
+    registerRoomEvent(client);
+  }, [client, instance]);
 
   /**
    * 加入房间
@@ -158,6 +174,24 @@ const Room: React.FC = () => {
       };
     }
   }, [client]);
+
+  /**
+   * 加入房间
+   */
+  const onJoinRoom = () => {
+    client?.joinRoom(
+      queryRef.current.appId,
+      queryRef.current.meetingId,
+      queryRef.current.userId,
+      queryRef.current.token
+    );
+  };
+  /**
+   * 离开房间
+   */
+  const onLeaveRoom = () => {
+    client?.leaveRoom();
+  };
 
   /**
    * 铅笔菜单切换
@@ -348,6 +382,63 @@ const Room: React.FC = () => {
     });
   };
 
+  /**
+   * 加载回放
+   */
+  const onLoadReplay = () => {
+    client?.getRecord(queryRef.current.recordId);
+  };
+  /**
+   * 播放
+   */
+  const onPlay = () => {
+    instance?.play();
+  };
+  /**
+   * 暂停
+   */
+  const onPause = () => {
+    instance?.pause();
+  };
+  /**
+   * 停止
+   */
+  const onStop = () => {
+    instance?.stop();
+  };
+  /**
+   * 跳转
+   */
+  const onSeek = () => {
+    Modal.confirm({
+      title: '请输入跳转的时间',
+      content: <Input ref={seekEleRef}/>,
+      onOk() {
+        const inputEle = seekEleRef.current?.input;
+        instance?.seek(parseFloat(inputEle?.value || ''));
+      }
+    });
+  };
+  /**
+   * 校准
+   */
+  const onCalibrate = () => {
+    Modal.confirm({
+      title: '请输入校准的时间',
+      content: <Input ref={calibrateEleRef}/>,
+      onOk() {
+        const inputEle = calibrateEleRef.current?.input;
+        instance?.calibrate(parseFloat(inputEle?.value || ''));
+      }
+    });
+  };
+  /**
+   * 关闭回放
+   */
+  const onCloseReplay = () => {
+    instance?.release();
+  };
+
   return <div className={styles.container}>
     <Toolbar
       fixed="top"
@@ -393,6 +484,17 @@ const Room: React.FC = () => {
             }}
           />
         </span>
+      </div>
+      <div className={styles.record}>
+        <Button className={styles.button} type="primary" onClick={onJoinRoom}>加入房间</Button>
+        <Button className={styles.button} type="primary" onClick={onLeaveRoom}>退出房间</Button>
+        <Button className={styles.button} type="primary" onClick={onLoadReplay}>加载回放</Button>
+        <Button className={styles.button} type="primary" onClick={onPlay}>播放</Button>
+        <Button className={styles.button} type="primary" onClick={onPause}>暂停</Button>
+        <Button className={styles.button} type="primary" onClick={onStop}>停止</Button>
+        <Button className={styles.button} type="primary" onClick={onSeek}>跳转</Button>
+        <Button className={styles.button} type="primary" onClick={onCalibrate}>校准</Button>
+        <Button className={styles.button} type="primary" onClick={onCloseReplay}>关闭回放</Button>
       </div>
     </div>
     <input
