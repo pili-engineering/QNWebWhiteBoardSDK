@@ -28,7 +28,7 @@ function App() {
   useEffect(() => {
     // 设置wasm资源路径
     QNWhiteboard.setConfig({
-      wasmPath: './'
+      wasmPath: './webassembly/'
     })
   }, []);
 
