@@ -1,97 +1,81 @@
-import React, { useState } from 'react';
+import { Button, Input } from 'antd';
+import { useCallback, useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Modal } from 'antd';
+import * as eruda from 'eruda';
+import QNWhiteboard from 'qnweb-whiteboard';
 
-import { ServerApi } from '@/api';
-import {
-  IconBegin,
-  IconJoin,
-  JoinRoomFormData,
-  JoinRoomModal,
-  QuickStartFormData,
-  QuickStartModal,
-} from '@/components';
+import { storeContext } from '../../store';
+import css from './index.module.scss';
 
-import styles from './index.module.scss';
+const roomTokens = [
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:izA6cPmls835DDCSCJbVCRArGMw=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ28xIiwidXNlcklkIjoiZ291c2VyMSJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:nDJqDjwJTRf2DVORszD4YrHP93M=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ28yIiwidXNlcklkIjoiZ291c2VyMiJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:PfNrk5kl8uq56R45RCz5Ak9H1jE=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ28zIiwidXNlcklkIjoiZ291c2VyMyJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:YGy-O2eDx5gNGQJm4eBDWZdfWdQ=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ280IiwidXNlcklkIjoiZ291c2VyNCJ9',
+  'QxZugR8TAhI38AiJ_cptTl3RbzLyca3t-AAiH-Hh:irEEx8TT7A_zG5MmnGI33chWFKk=:eyJhcHBJZCI6ImZsZXFmcTZ5YyIsImV4cGlyZUF0IjoxNzIwMTQ5ODUxLCJwZXJtaXNzaW9uIjoidXNlciIsInJvb21OYW1lIjoiZ281IiwidXNlcklkIjoiZ291c2VyNSJ9'
+];
 
-const MAIN_VERSION = mainVersion;
-
-const Home: React.FC = () => {
+const Home = () => {
   const history = useHistory();
-
-  const [quickStartVisible, setQuickStartVisible] = useState(false);
-  const [joinVisible, setJoinVisible] = useState(false);
-  const [joinRoomFormData, setJoinRoomFromData] = useState<JoinRoomFormData>();
-
-  /**
-   * 跳转到房间页
-   * @param params
-   */
-  const onJoin = (
-    params: JoinRoomFormData
-  ) => {
-    const query = Object.entries(params).map(([key, value]) => {
-      return `${key}=${value}`;
-    }).join('&');
-    history.push(`/room?${query}`);
-  };
+  const [roomToken, setRoomToken] = useState<string>();
+  const [roomTitle, setRoomTitle] = useState<string>();
+  const { dispatch, state } = useContext(storeContext);
 
   /**
-   * 快速开始
-   * 提交表单
-   * @param value
+   * 打开调试
    */
-  const onFinish = (value: QuickStartFormData) => {
-    ServerApi.createMeeting({
-      type: Number(value.type),
-      aspectRatio: value.aspectRatio,
-      url: value.url || '',
-      zoomScale: value.zoomScale,
-      userIds: [value.userId]
-    }).then(result => {
-      onJoin({
-        appId: result.data.appId,
-        meetingId: result.data.meetingId,
-        userId: value.userId,
-        token: (result.data.userTokens || {})[value.userId],
-        bucketId: result.data.bucketId,
-      });
-    }).catch(error => {
-      Modal.error({
-        title: '创建房间失败',
-        content: error.message
-      });
+  const openDebug = () => {
+    // @ts-ignore
+    eruda.init();
+    dispatch({
+      type: 'updateIsDebug',
+      payload: true
     });
   };
 
-  return <div className={styles.container}>
-    <QuickStartModal
-      visible={quickStartVisible}
-      onFinish={onFinish}
-      onCancel={() => setQuickStartVisible(false)}
-    />
+  /**
+   * 点击随机生成 roomToken
+   */
+  const generateRoomToken = useCallback(() => {
+    const randomIndex = Math.floor(Math.random() * roomTokens.length);
+    setRoomToken(roomTokens[randomIndex]);
+  }, []);
 
-    <JoinRoomModal
-      visible={joinVisible}
-      onCancel={() => setJoinVisible(false)}
-      data={joinRoomFormData}
-      onChange={result => setJoinRoomFromData(result)}
-      onOk={() => onJoin(joinRoomFormData || {})}
-    />
+  /**
+   * 点击进入房间
+   */
+  const joinRoom = () => {
+    let pushURL = `/room?roomToken=${roomToken}&isDebug=${state.isDebug}`;
+    if (roomTitle) pushURL += `&roomTitle=${roomTitle}`;
+    history.push(pushURL);
+  };
 
-    <div className={styles.box}>
-      <h1 className={styles.title}>七牛白板Demo体验{MAIN_VERSION}</h1>
-      <div className={styles.buttons}>
-        <div className={styles.button} onClick={() => setJoinVisible(true)}>
-          <IconJoin className={styles.buttonIcon}/>
-          <div className={styles.buttonText}>加入房间</div>
-        </div>
-        <div className={styles.button} onClick={() => setQuickStartVisible(true)}>
-          <IconBegin className={styles.buttonIcon}/>
-          <div className={styles.buttonText}>快速开始</div>
-        </div>
-      </div>
-    </div>
+  return <div className={css.container}>
+    <h1 onClick={openDebug} className={css.title}>七牛白板 demo 体验</h1>
+    <Input
+      value={roomToken}
+      onChange={e => setRoomToken(e.target.value)}
+      placeholder="请输入roomToken"
+      style={{ marginBottom: 10 }}
+    />
+    <Input
+      value={roomTitle}
+      onChange={e => setRoomTitle(e.target.value)}
+      placeholder="请输入房间名"
+      style={{ marginBottom: 10 }}
+    />
+    <Button
+      type="primary"
+      block
+      onClick={joinRoom}
+      style={{ marginBottom: 10 }}
+    >点击进入房间</Button>
+    <Button
+      type="primary"
+      block
+      onClick={generateRoomToken}
+    >点击随机生成 roomToken</Button>
+    <div className={css.version}>sdk version: {QNWhiteboard.version}</div>
   </div>;
 };
 
