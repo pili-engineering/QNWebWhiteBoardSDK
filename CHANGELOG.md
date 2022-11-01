@@ -1,3 +1,14 @@
+# [1.2.0-beta.2](https://github.com/qbox/QNSolutions_Web/compare/qnweb-whiteboard-demo@1.2.0-beta.0...qnweb-whiteboard-demo@1.2.0-beta.2) (2022-11-01)
+
+
+### Bug Fixes
+
+* **qnweb-whiteboard-demo:** 更新白板sdk1.2.0-beta.2，兼容umd格式 ([8dc5cc4](https://github.com/qbox/QNSolutions_Web/commit/8dc5cc402e6a5b4d1b7d8224c7699b4cf5907612))
+* **qnweb-whiteboard-demo:** 添加 build:staging scripts ([fbabe9f](https://github.com/qbox/QNSolutions_Web/commit/fbabe9f5286d8bc063fae6bb1f6394642d7ce3c0))
+* **qnweb-whiteboard-demo:** ts-ignore eruda ([f506a37](https://github.com/qbox/QNSolutions_Web/commit/f506a3722de825ebdf125d03de51afc5ef3d6a4c))
+
+
+
 # [1.2.0-beta.0](https://github.com/qbox/QNSolutions_Web/compare/qnweb-whiteboard-demo@2.2.2...qnweb-whiteboard-demo@1.2.0-beta.0) (2022-10-31)
 
 
