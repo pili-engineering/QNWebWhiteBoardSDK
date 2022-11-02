@@ -1,61 +1,33 @@
 {
   "name": "qnweb-whiteboard-demo",
-  "version": "1.2.0-beta.2",
-  "private": true,
-  "homepage": ".",
-  "main": "electron.js",
+  "version": "2.2.3",
+  "scripts": {
+    "dev": "vite --mode dev",
+    "build:staging": "npm run clean && vite build --mode staging && node scripts/dist-version.js",
+    "build:prod": "npm run clean && vite build --mode prod && node scripts/dist-version.js",
+    "build": "npm run build:prod",
+    "preview": "vite preview",
+    "clean": "tsc --skipLibCheck && rimraf dist"
+  },
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@types/node": "^12.0.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "antd": "^4.16.2",
+    "ahooks": "^3.1.9",
+    "antd": "^4.20.4",
     "classnames": "^2.3.1",
-    "eruda": "^2.4.1",
-    "qnweb-whiteboard": "1.2.0-beta.2",
+    "qnweb-whiteboard": "2.2.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.3",
-    "recoil": "^0.3.1",
-    "typescript": "^4.1.2",
-    "vue-cli-plugin-electron-builder": "^2.1.1",
-    "web-vitals": "^1.0.1"
-  },
-  "scripts": {
-    "dev": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "build:staging": "react-app-rewired build",
-    "test": "react-app-rewired test",
-    "eject": "react-scripts eject",
-    "electron": "electron ."
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "react-router-dom": "^5.0.0",
+    "react-transition-group": "^4.4.2"
   },
   "devDependencies": {
-    "@types/react-router-dom": "^5.1.7",
-    "antd-scss-theme-plugin": "^1.0.8",
-    "cross-env": "^7.0.3",
-    "customize-cra": "^1.0.0",
-    "electron": "13.0",
-    "react-app-rewired": "^2.1.8",
-    "webpack": "^5.41.1"
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^17.0.10",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/react-transition-group": "^4.4.4",
+    "@vitejs/plugin-react": "^1.0.7",
+    "rimraf": "^3.0.2",
+    "sass": "^1.52.1",
+    "typescript": "^4.4.4",
+    "vite": "^2.7.2"
   }
 }
