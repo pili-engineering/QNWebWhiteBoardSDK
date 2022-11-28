@@ -450,3 +450,9 @@ qnWhiteboard.unregisterEvent(qnWhiteboard.controller.Event.AllEvent, processEven
 ```
 文件滚动事件发生，ScrollToTop 为 1 表示滚动顶部，ScrollToBottom 为 1 标识滚动到了底部
 ```
+
+#### fileStatusChanged
+
+```
+文件上传下载渲染进程回调，回调参数{resourceId, status}
+```

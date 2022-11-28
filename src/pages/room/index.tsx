@@ -24,6 +24,16 @@ import Rubber from '../../components/rubber';
 import Geometry from '../../components/geometry';
 import Gesture from '../../components/gesture';
 
+/**
+ * 背景色
+ */
+const bgColors = [
+  { color: '#000000', text: '黑色' },
+  { color: '#cccccc', text: '灰色' },
+  { color: '#4a4ac5', text: '紫色' },
+  { color: 'transparent', text: '透明' }
+];
+
 const Room = () => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const { whiteboardClient, isJoined, roomError, roomToken } = useJoinedRoom();
@@ -47,21 +57,28 @@ const Room = () => {
     });
     const [whiteboardVisible, setWhiteboardVisible] = useState(true);
     const [wIsOpen, setWIsOpen] = useState<'open' | 'close'>();
-  const [isExpanded, setIsExpanded] = useState(false);
-    /**
-     * 背景色
-     */
-    const bgColors = [
-      { color: '#000000', text: '黑色' },
-      { color: '#cccccc', text: '灰色' },
-      { color: '#4a4ac5', text: '紫色' },
-      { color: 'transparent', text: '透明' }
-    ];
+    const [isExpanded, setIsExpanded] = useState(false);
 
     /**
      * 背景色文本
      */
     const bgColorText = bgColors.find(color => color.color === bgColor)?.text || '默认';
+
+    /**
+     * 文件上传下载渲染进程回调
+     */
+    useEffect(() => {
+      const handleFileStatusChanged = (event: number, result: unknown) => {
+        console.log('handleFileStatusChanged: event', event);
+        console.log('handleFileStatusChanged: result', result);
+      };
+      if (whiteboardClient) {
+        whiteboardClient.registerEvent(whiteboardClient.controller.Event.fileStatusChanged, handleFileStatusChanged);
+        return () => {
+          whiteboardClient.unregisterEvent(whiteboardClient.controller.Event.fileStatusChanged, handleFileStatusChanged);
+        };
+      }
+    }, [whiteboardClient]);
 
     /**
      * 初始化完成
@@ -292,7 +309,7 @@ const Room = () => {
       <div className={classNames(css.menu, { [css.menuExpanded]: isExpanded })}>
         <div className={css.menuBar}>
           <Icon
-            type='icon-mouse'
+            type="icon-mouse"
             className={css.menuIcon}
             onClick={() => setInputMode(InputMode.Select)}
           />
@@ -312,7 +329,7 @@ const Room = () => {
             setInputMode={() => setInputMode(InputMode.Geometry)}
           />
           <Icon
-            type='icon-upload'
+            type="icon-upload"
             className={css.menuIcon}
             onClick={uploadFileClick}
           />
@@ -320,7 +337,8 @@ const Room = () => {
         <div
           className={css.menuExpandSlip}
           onClick={() => setIsExpanded(!isExpanded)}
-        >{isExpanded ? '缩起' : '展开'}工具栏</div>
+        >{isExpanded ? '缩起' : '展开'}工具栏
+        </div>
       </div>
 
       <Drawer

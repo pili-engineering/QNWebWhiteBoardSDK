@@ -1,3 +1,12 @@
+# [1.2.0](https://github.com/qbox/QNSolutions_Web/compare/qnweb-whiteboard-demo@1.2.0-beta.2...qnweb-whiteboard-demo@1.2.0) (2022-11-25)
+
+
+### Features
+
+* **qnweb-whiteboard-demo:** 新增fileStatusChanged事件 ([1573df1](https://github.com/qbox/QNSolutions_Web/commit/1573df1f5fcc18aced598ad816ead71c3360886a))
+
+
+
 # [1.2.0-beta.2](https://github.com/qbox/QNSolutions_Web/compare/qnweb-whiteboard-demo@1.2.0-beta.0...qnweb-whiteboard-demo@1.2.0-beta.2) (2022-11-01)
 
 
